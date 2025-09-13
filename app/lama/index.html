@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daemon - AI Powered Investigator Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Dependencies for Particle Loader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(154deg, #0053B4 -15.14%, #000B19 83.42%);
+            color: #FFF;
+            overflow-x: hidden;
+        }
+        body.loading {
+            overflow: hidden;
+        }
+        /* Loading Screen Styles */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(154deg, #0053B4 -15.14%, #000B19 83.42%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.75s ease-out;
+        }
+        #loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        /* Styles for Particle Loader Canvas */
+        .particlehead canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        #loader-text {
+            position: relative;
+            z-index: 2;
+        }
+
+
+        .plus-jakarta {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        /* New Navbar Style */
+        #main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            transition: top 0.4s cubic-bezier(0.2, 0, 0, 1), background-color 0.4s ease;
+        }
+        #main-header.scrolled {
+             background-color: rgba(10, 25, 47, 0.85);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        #main-header.hidden-nav {
+            top: -100px;
+        }
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+            color: #A0AEC0; /* gray-400 */
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #FFFFFF;
+        }
+        
+        .cta-section {
+             background:linear-gradient(314deg, #002E3B -126.37%, #001632 91.5%);
+        }
+        
+        .scroll-animation {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .scroll-animation.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin 10s linear infinite;
+        }
+        .hero-bg-decor {
+            background-image: radial-gradient(circle at 50% 100%, rgba(0, 200, 255, 0.3), transparent 40%),
+                              linear-gradient(314deg, #002E3B -126.37%, #001632 91.5%);
+        }
+        .decor-square {
+            background: linear-gradient(136deg, #D9D9D9 1.08%, #737373 100%);
+            mix-blend-mode: soft-light;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        /* Pricing Section Styles */
+        .pricing-toggle button {
+            transition: all 0.3s ease;
+        }
+        .pricing-toggle button.active {
+            background-color: #00C8FF;
+            color: #0D376D;
+            font-weight: 600;
+        }
+        
+        /* Bubble Text Animation */
+        .bubble-text-char {
+            display: inline-block;
+            font-weight: 300; /* Start with light weight */
+            transition: 0.35s font-weight, 0.35s color, 0.35s transform, 0.35s text-shadow;
+        }
+        .bubble-text-char:hover {
+            font-weight: 700; /* Bold */
+            color: white;
+            transform: scale(1.1) translateY(-5px);
+            text-shadow: 0 0 15px rgba(0, 200, 255, 0.7);
+        }
+        .bubble-text-char:hover + .bubble-text-char {
+            font-weight: 500; /* Medium */
+            color: rgb(199, 210, 254);
+            transform: scale(1.05) translateY(-2px);
+        }
+        .bubble-text-char:hover + .bubble-text-char + .bubble-text-char {
+            font-weight: 300; /* Light */
+        }
+        .bubble-text-char:has(+ .bubble-text-char:hover) {
+            font-weight: 500; /* Medium */
+            color: rgb(199, 210, 254);
+            transform: scale(1.05) translateY(-2px);
+        }
+        .bubble-text-char:has(+ .bubble-text-char + .bubble-text-char:hover) {
+            font-weight: 300; /* Light */
+        }
+
+        /* Encrypt Button Styles */
+        .encrypt-btn {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease-in-out, color 0.3s ease;
+        }
+        .encrypt-btn:hover {
+            transform: scale(1.025);
+        }
+        .encrypt-btn:active {
+            transform: scale(0.975);
+        }
+        .animated-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            transform: scale(1.25);
+            background: linear-gradient(to top, transparent 40%, rgba(165, 180, 252, 0.5) 50%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            animation: gradient-wipe 1.5s linear infinite alternate;
+        }
+        .encrypt-btn:hover .animated-bg {
+            opacity: 1;
+        }
+        @keyframes gradient-wipe {
+            from { transform: translateY(100%); }
+            to { transform: translateY(-100%); }
+        }
+        
+        /* Squishy Card Styles */
+        .squishy-card {
+            position: relative;
+            height: 24rem; /* 384px */
+            width: 20rem; /* 320px */
+            flex-shrink: 0;
+            overflow: hidden;
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .squishy-card:hover {
+            transform: scale(1.05);
+        }
+        .squishy-card .card-content {
+            position: relative;
+            z-index: 10;
+            color: white;
+        }
+        .squishy-card .price {
+            display: block;
+            margin: 0.5rem 0;
+            transform-origin: top left;
+            font-family: 'Poppins', sans-serif;
+            font-size: 3.75rem; /* 60px */
+            font-weight: 900;
+            line-height: 1.2;
+            transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(0.85);
+        }
+        .squishy-card:hover .price {
+            transform: scale(1);
+        }
+        .squishy-card .squishy-btn {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            z-index: 20;
+            border-radius: 0.5rem;
+            border: 2px solid white;
+            background-color: white;
+            padding: 0.5rem 0;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            backdrop-filter: blur(4px);
+            transition: color 0.3s ease, background-color 0.3s ease;
+        }
+        .squishy-card .squishy-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .squishy-card .card-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .squishy-card:hover .card-bg {
+            transform: scale(1.5);
+        }
+        .squishy-card .card-bg-circle, .squishy-card .card-bg-ellipse {
+            position: absolute;
+            background-color: rgba(0,0,0,0.2);
+            transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+        }
+        .squishy-card .card-bg-circle {
+            left: 50%;
+            top: 30%;
+            width: 203px;
+            height: 203px;
+            transform: translateX(-50%) translateY(-50%);
+            border-radius: 50%;
+        }
+        .squishy-card:hover .card-bg-circle {
+            transform: translateX(-50%) translateY(-50%) scaleY(0.5) translateY(-25px);
+        }
+        .squishy-card .card-bg-ellipse {
+            left: 50%;
+            top: 70%;
+            width: 203px;
+            height: 87px;
+            transform: translateX(-50%) translateY(-50%);
+            border-radius: 50%;
+        }
+        .squishy-card:hover .card-bg-ellipse {
+            transform: translateX(-50%) translateY(-50%) scaleY(2.25) translateY(-25px);
+        }
+
+        /* Tilt Card Styles */
+        .features-grid {
+            perspective: 1000px;
+        }
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tilt-card-inner {
+            transform: translateZ(40px);
+            transform-style: preserve-3d;
+        }
+
+        /* Added Styles for Feature Cards */
+        .feature-card-1, .feature-card-2, .feature-card-3, .feature-card-4 {
+            background: linear-gradient(145deg, rgba(22, 49, 82, 0.4), rgba(10, 25, 47, 0.6));
+            border: 1px solid rgba(0, 200, 255, 0.15);
+            backdrop-filter: blur(5px);
+        }
+
+        /* New Mobile Menu Styles */
+        #mobile-menu-new {
+            background-color: rgba(10, 25, 47, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+        }
+        
+        /* D3 Animation Styles */
+        #d3-trace-animation-container {
+            background: rgba(0, 27, 50, 0.3);
+            border: 1px solid rgba(0, 200, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Bento Grid Styles */
+        .bento-block {
+            background: linear-gradient(145deg, rgba(22, 49, 82, 0.5), rgba(10, 25, 47, 0.7));
+            border: 1px solid rgba(0, 200, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            opacity: 0;
+            transform: scale(0.95) translateY(30px);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bento-block.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+        .bento-block:hover {
+            transform: scale(1.02);
+            transition-duration: 0.3s;
+        }
+        
+        /* Draw Circle Effect */
+        #circle-path {
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.45, 0, 0.55, 1);
+        }
+        #draw-effect-section.visible #circle-path {
+            stroke-dashoffset: 0;
+        }
+
+        /* Clip Path Link Styles */
+        .clip-path-link-container {
+            border: 1px solid rgba(0, 200, 255, 0.15);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        .clip-path-link {
+            position: relative;
+            display: grid;
+            place-content: center;
+            padding: 1.5rem;
+            text-align: center;
+            min-height: 120px;
+            background: linear-gradient(145deg, rgba(22, 49, 82, 0.2), rgba(10, 25, 47, 0.4));
+            color: #E2E8F0; /* slate-200 */
+        }
+        .clip-path-link-text {
+            font-weight: 600;
+        }
+        .clip-path-link-reveal {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-content: center;
+            background-color: #00C8FF;
+            color: #000B19;
+            transition: clip-path 0.4s cubic-bezier(0.45, 0, 0.55, 1);
+        }
+        
+        /* Data Source Card Styles */
+        .data-source-card {
+             background: linear-gradient(145deg, rgba(22, 49, 82, 0.5), rgba(10, 25, 47, 0.7));
+            border: 1px solid rgba(0, 200, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            opacity: 0; /* Initial state for anime.js */
+        }
+
+    </style>
+</head>
+<body class="w-full loading">
+    <!-- Loading Screen -->
+    <div id="loader" class="particlehead">
+        <h1 id="loader-text" class="plus-jakarta text-3xl md:text-4xl font-semibold uppercase tracking-widest text-white"></h1>
+    </div>
+
+    <!-- Header -->
+     <header id="main-header">
+         <div class="container mx-auto px-6">
+             <nav class="flex justify-between items-center py-4">
+                 <div class="flex items-center gap-3">
+                     <img src="https://api.builder.io/api/v1/image/assets/TEMP/0b774bfeabf0a41dd54fc314dba2e3da7216f89b?width=130" alt="Daemon Logo" class="w-10 h-10"/>
+                     <span class="text-2xl font-bold text-white tracking-wider">Daemon</span>
+                 </div>
+                 <div class="hidden lg:flex items-center gap-6" justify="center">
+                     <a href="#features" class="nav-link text-lg">Products</a>
+                     <a href="#about" class="nav-link text-lg">About</a>
+                     <a href="#pricing" class="nav-link text-lg">Pricing</a>
+                 </div>
+                 <div class="hidden lg:flex items-center gap-4">
+                      <a href="#" class="nav-link text-lg">Login</a>
+                     <a href="#features" class="font-semibold px-5 py-2 rounded-lg bg-cyan-400 text-black hover:bg-cyan-500 transition-colors encrypt-btn" data-text="Investigate" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                         <span class="btn-text">Investigate</span>
+                     </a>
+                 </div>
+                  <button class="lg:hidden" id="menu-button">
+                       <i data-lucide="menu" class="w-8 h-8 text-white"></i>
+                  </button>
+             </nav>
+         </div>
+         <!-- New Mobile Menu -->
+        <div id="mobile-menu-new" class="hidden lg:hidden">
+            <div class="flex flex-col gap-2 text-lg">
+                <a href="#features" class="nav-link py-2 text-white">Products</a>
+                <a href="#about" class="nav-link py-2 text-white">About</a>
+                <a href="#pricing" class="nav-link py-2 text-white">Pricing</a>
+                <a href="#" class="nav-link py-2 text-white">Login</a>
+
+                <!-- CTA Button -->
+                 <a href="#features" class="font-semibold px-6 py-2 rounded-lg mt-4 bg-cyan-400 text-black text-center hover:bg-cyan-500 transition-colors encrypt-btn" data-text="Investigate" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                     <span class="btn-text">Investigate</span>
+                 </a>
+            </div>
+        </div>
+     </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="hero" class="relative min-h-screen flex flex-col justify-center items-center text-center pt-32 pb-16 px-4 overflow-hidden">
+            <div class="absolute inset-0 hero-bg-decor"></div>
+            <div class="absolute inset-0 bg-no-repeat bg-cover bg-center opacity-20" style="background-image: url('https://api.builder.io/api/v1/image/assets/TEMP/e9f658c779baa8e0ead0ae0726bb8da1b925c4ae?width=4962');"></div>
+            <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent mix-blend-plus-lighter opacity-30"></div>
+            <div class="decor-square absolute w-24 h-24 md:w-32 md:h-32 rounded-lg top-1/4 left-[10%] lg:left-[15%]"></div>
+            <div class="decor-square absolute w-24 h-24 md:w-32 md:h-32 rounded-lg top-1/2 right-[10%] lg:right-[15%] [animation-delay:-3s]"></div>
+            <div class="decor-square absolute w-16 h-16 md:w-24 md:h-24 rounded-lg bottom-1/4 left-[40%] lg:left-[45%] [animation-delay:-1.5s]"></div>
+            <div class="relative z-10 flex flex-col items-center gap-8">
+                <h1 class="plus-jakarta font-light text-5xl md:text-7xl lg:text-8xl uppercase tracking-wider scroll-animation">
+                    <span id="hero-line-1" class="whitespace-nowrap"></span>
+                    <span id="hero-line-2" class="block whitespace-nowrap"></span>
+                </h1>
+                <p class="plus-jakarta text-2xl md:text-4xl capitalize tracking-wide scroll-animation">AI powered investigator tools</p>
+                <a href="copilot.html" class="mt-8">
+                    <button class="plus-jakarta font-semibold text-lg md:text-xl uppercase tracking-widest text-white bg-white/10 border border-cyan-400/50 rounded-lg px-10 py-4 hover:bg-cyan-400/20 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)] transition-all duration-300 scroll-animation encrypt-btn" data-text="Try Beta" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                          <div class="relative z-10 flex items-center gap-2">
+                           <i data-lucide="lock" class="w-5 h-5"></i><span class="btn-text">Try Beta</span>
+                         </div>
+                         <span class="animated-bg"></span>
+                    </button>
+                </a>
+            </div>
+        </section>
+        
+        <!-- Draw Circle Text Section -->
+        <section id="draw-effect-section" class="py-24 px-4 md:px-8 bg-[#000B19] text-center scroll-animation">
+            <h2 class="plus-jakarta text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight">
+                Uncover the Truth with
+                <span class="relative inline-block text-cyan-400">
+                    Precision
+                    <svg viewBox="0 0 345 84" fill="none" xmlns="http://www.w3.org/2000/svg" class="absolute -left-4 -right-4 -top-2 -bottom-4">
+                        <path id="circle-path" d="M171.745 2.00002C127.906 19.3441 -1.4985 11.2312 2.30748 48.6015C4.78288 74.1913 41.3415 80.4439 152.483 78.8573C263.625 77.2707 384.711 75.3193 335.631 42.6105C280.12 -0.806297 122.033 26.311 68.9954 2.00002" stroke="#00C8FF" stroke-width="3"/>
+                    </svg>
+                </span>
+                AI
+            </h2>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-20 px-4 md:px-8 relative bg-[#000B19]">
+            <div class="container mx-auto">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 features-grid">
+                    <div class="feature-card-1 rounded-2xl p-8 scroll-animation tilt-card">
+                        <div class="tilt-card-inner flex flex-col md:flex-row items-center gap-8">
+                            <img src="https://api.builder.io/api/v1/image/assets/TEMP/acbc5129b8a8a9388f18ed2b31b712cf29c77edd?width=678" class="w-1/2 md:w-1/3 object-contain" alt="Pattern Recognition"/>
+                            <div class="md:w-2/3">
+                                <h3 class="plus-jakarta text-3xl md:text-4xl font-extrabold tracking-wider">Pattern Recognition</h3>
+                                <p class="plus-jakarta mt-4 text-lg md:text-xl tracking-wide">AI-powered detection of hidden transaction patterns and anomalous fund flows.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-card-2 rounded-2xl p-8 scroll-animation tilt-card">
+                        <div class="tilt-card-inner flex flex-col md:flex-row items-center gap-8">
+                            <img src="https://api.builder.io/api/v1/image/assets/TEMP/b7b6c967b2af999b73581d87c1cb293d414f2668?width=684" class="w-1/2 md:w-1/3 object-contain" alt="Smart Contract Security"/>
+                            <div class="md:w-2/3 text-white">
+                                <h3 class="plus-jakarta text-3xl md:text-4xl font-bold tracking-wider">Smart Contract Security</h3>
+                                <p class="plus-jakarta mt-4 text-lg md:text-xl tracking-wide">Automated vulnerability checks to flag malicious or risky contracts before exposure.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-card-3 rounded-2xl p-8 scroll-animation tilt-card">
+                        <div class="tilt-card-inner flex flex-col md:flex-row items-center gap-8">
+                            <img src="https://api.builder.io/api/v1/image/assets/TEMP/f3567b2f17a4fe4018985bfb2cbc801c651d99d0?width=572" class="w-1/2 md:w-1/3 object-contain" alt="OSINT Enhanced"/>
+                            <div class="md:w-2/3 text-white">
+                                <h3 class="plus-jakarta text-3xl md:text-4xl font-extrabold tracking-wider">OSINT Enhanced</h3>
+                                <p class="plus-jakarta mt-4 text-lg md:text-xl tracking-wide text-gray-300">Go beyond the blockchain with integrated open-source intelligence for off-chain context.</p>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Card 4 -->
+                    <div class="feature-card-4 rounded-2xl p-8 scroll-animation tilt-card">
+                        <div class="tilt-card-inner flex flex-col md:flex-row items-center gap-8">
+                            <img src="https://api.builder.io/api/v1/image/assets/TEMP/759555c85f4dab40bf95c2250aff8ea3201a2341?width=654" class="w-1/2 md:w-1/3 object-contain" alt="Forensic Reporting"/>
+                            <div class="md:w-2/3">
+                                <h3 class="plus-jakarta text-3xl md:text-4xl font-extrabold tracking-wider">Forensic Reporting</h3>
+                                <p class="plus-jakarta mt-4 text-lg md:text-xl tracking-wide">Generate investigation-grade case reports with fund flow mapping, entity attribution, and sanctions intelligence.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- About Section -->
+        <section id="about" class="py-20 px-4 md:px-8">
+            <div class="container mx-auto">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="scroll-animation">
+                        <h2 class="plus-jakarta font-medium text-5xl md:text-7xl lg:text-8xl uppercase tracking-tighter animated-heading mb-8">FORGED IN THE<br>DIGITAL TRENCHES</h2>
+                        <p class="plus-jakarta text-lg text-white/80 leading-relaxed">
+                            Daemon is an integrated, AI-powered platform that provides unprecedented clarity and actionable intelligence to combat financial crime and secure the Web3 ecosystem.
+                        </p>
+                    </div>
+                    <div id="d3-trace-animation-container" class="scroll-animation rounded-2xl shadow-2xl shadow-cyan-500/10">
+                        <svg id="d3-trace-animation" class="w-full h-full min-h-[400px] lg:min-h-[500px]"></svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="py-20 px-4 md:px-8">
+            <div class="container mx-auto text-center scroll-animation">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 animated-heading">Flexible Pricing for Every Team</h2>
+                <p class="text-white/80 text-lg mb-12">Choose the plan that's right for you.</p>
+                <div class="flex justify-center mb-12">
+                    <div class="pricing-toggle bg-white/10 rounded-full p-1 flex items-center">
+                        <button id="monthly-btn" class="active px-6 py-2 rounded-full text-white">Monthly</button>
+                        <button id="annual-btn" class="px-6 py-2 rounded-full text-white/70 relative">
+                            Annually
+                            <span class="absolute -top-2 -right-2 bg-cyan-400 text-blue-900 text-xs font-bold px-2 py-0.5 rounded-full">SAVE 20%</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="monthly-pricing" class="flex flex-wrap justify-center gap-8">
+                    <!-- Basic Plan -->
+                    <div class="squishy-card" style="background-color: #3b82f6;">
+                        <div class="card-content">
+                            <span class="mb-3 block w-fit rounded-full bg-white/30 px-3 py-0.5 text-sm font-light text-white">Basic</span>
+                            <span class="price">$29/<br>Month</span>
+                            <p>For individuals and small teams starting out with on-chain investigation.</p>
+                        </div>
+                        <button class="squishy-btn encrypt-btn" style="color:#3b82f6" data-text="Get Started" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                            <span class="btn-text">Get Started</span>
+                        </button>
+                        <div class="card-bg">
+                            <div class="card-bg-circle"></div><div class="card-bg-ellipse"></div>
+                        </div>
+                    </div>
+                    <!-- Pro Plan -->
+                    <div class="squishy-card" style="background-color: #2563eb;">
+                        <div class="card-content">
+                            <span class="mb-3 block w-fit rounded-full bg-white/30 px-3 py-0.5 text-sm font-light text-white">Pro</span>
+                            <span class="price">$59/<br>Month</span>
+                            <p>For growing businesses and professional investigators requiring advanced tools.</p>
+                        </div>
+                        <button class="squishy-btn encrypt-btn" style="color:#2563eb" data-text="Get Started" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                            <span class="btn-text">Get Started</span>
+                        </button>
+                        <div class="card-bg">
+                            <div class="card-bg-circle"></div><div class="card-bg-ellipse"></div>
+                        </div>
+                    </div>
+                    <!-- Enterprise Plan -->
+                    <div class="squishy-card" style="background-color: #1e40af;">
+                        <div class="card-content">
+                             <span class="mb-3 block w-fit rounded-full bg-white/30 px-3 py-0.5 text-sm font-light text-white">Enterprise</span>
+                            <span class="price">Let's<br>Talk</span>
+                            <p>For large-scale organizations needing custom solutions and dedicated support.</p>
+                        </div>
+                        <button class="squishy-btn encrypt-btn" style="color:#1e40af" data-text="Contact Sales" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                             <span class="btn-text">Contact Sales</span>
+                        </button>
+                        <div class="card-bg">
+                            <div class="card-bg-circle"></div><div class="card-bg-ellipse"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="annual-pricing" class="hidden flex flex-wrap justify-center gap-8">
+                     <!-- Annual Pricing Cards with squishy effect -->
+                     <div class="squishy-card" style="background-color: #3b82f6;">
+                         <div class="card-content">
+                             <span class="mb-3 block w-fit rounded-full bg-white/30 px-3 py-0.5 text-sm font-light text-white">Basic</span>
+                             <span class="price">$278/<br>Year</span>
+                             <p>For individuals and small teams starting out with on-chain investigation.</p>
+                         </div>
+                         <button class="squishy-btn encrypt-btn" style="color:#3b82f6" data-text="Get Started" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                             <span class="btn-text">Get Started</span>
+                         </button>
+                         <div class="card-bg">
+                             <div class="card-bg-circle"></div><div class="card-bg-ellipse"></div>
+                         </div>
+                     </div>
+                     <div class="squishy-card" style="background-color: #2563eb;">
+                         <div class="card-content">
+                             <span class="mb-3 block w-fit rounded-full bg-white/30 px-3 py-0.5 text-sm font-light text-white">Pro</span>
+                             <span class="price">$566/<br>Year</span>
+                             <p>For growing businesses and professional investigators requiring advanced tools.</p>
+                         </div>
+                         <button class="squishy-btn encrypt-btn" style="color:#2563eb" data-text="Get Started" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                             <span class="btn-text">Get Started</span>
+                         </button>
+                         <div class="card-bg">
+                             <div class="card-bg-circle"></div><div class="card-bg-ellipse"></div>
+                         </div>
+                     </div>
+                     <div class="squishy-card" style="background-color: #1e40af;">
+                         <div class="card-content">
+                              <span class="mb-3 block w-fit rounded-full bg-white/30 px-3 py-0.5 text-sm font-light text-white">Enterprise</span>
+                             <span class="price">Let's<br>Talk</span>
+                             <p>For large-scale organizations needing custom solutions and dedicated support.</p>
+                         </div>
+                         <button class="squishy-btn encrypt-btn" style="color:#1e40af" data-text="Contact Sales" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                              <span class="btn-text">Contact Sales</span>
+                         </button>
+                         <div class="card-bg">
+                             <div class="card-bg-circle"></div><div class="card-bg-ellipse"></div>
+                         </div>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Compliance Section -->
+        <section id="compliance" class="py-20 px-4 md:px-8 bg-[#001021]">
+            <div class="container mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="plus-jakarta text-4xl md:text-5xl font-bold">Ironclad Security, Seamless Compliance</h2>
+                    <p class="plus-jakarta text-lg text-white/80 mt-4 max-w-3xl mx-auto">Navigate the complexities of global regulations with an intelligence-driven platform designed to protect your assets and your reputation.</p>
+                </div>
+                <div class="mx-auto grid max-w-5xl grid-flow-dense grid-cols-12 gap-4">
+                    <div class="bento-block col-span-12 lg:col-span-8">
+                         <div class="clip-path-link-container">
+                            <div class="grid grid-cols-2 divide-x divide-y divide-white/10">
+                                <a href="#" class="clip-path-link">
+                                    <span class="clip-path-link-text">Navigate Regulations with Confidence</span>
+                                    <div class="clip-path-link-reveal">
+                                         <span class="clip-path-link-text">Navigate Regulations with Confidence</span>
+                                    </div>
+                                </a>
+                                <a href="#" class="clip-path-link">
+                                    <span class="clip-path-link-text">Shield Your Reputation</span>
+                                    <div class="clip-path-link-reveal">
+                                        <span class="clip-path-link-text">Shield Your Reputation</span>
+                                    </div>
+                                </a>
+                                 <a href="#" class="clip-path-link">
+                                     <span class="clip-path-link-text">Automate and Accelerate</span>
+                                    <div class="clip-path-link-reveal">
+                                        <span class="clip-path-link-text">Automate and Accelerate</span>
+                                    </div>
+                                </a>
+                                <a href="#" class="clip-path-link">
+                                    <span class="clip-path-link-text">Secure Exchanges & DeFi</span>
+                                    <div class="clip-path-link-reveal">
+                                        <span class="clip-path-link-text">Secure Exchanges & DeFi</span>
+                                    </div>
+                                </a>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="data-source-card col-span-12 lg:col-span-4">
+                        <div class="flex items-center gap-3 mb-3">
+                            <img src="https://flagcdn.com/w40/us.png" alt="US Flag" class="w-7 h-auto rounded-sm">
+                            <h4 class="plus-jakarta font-bold">United States</h4>
+                        </div>
+                        <p class="text-sm text-white/70">Office of Foreign Assets Control (OFAC)</p>
+                    </div>
+                    <div class="data-source-card col-span-12 lg:col-span-4">
+                         <div class="flex items-center gap-3 mb-3">
+                            <img src="https://flagcdn.com/w40/gb.png" alt="UK Flag" class="w-7 h-auto rounded-sm">
+                            <h4 class="plus-jakarta font-bold">United Kingdom</h4>
+                        </div>
+                        <p class="text-sm text-white/70">Office of Financial Sanctions Implementation (OFSI)</p>
+                    </div>
+                     <div class="data-source-card col-span-12 lg:col-span-4">
+                         <div class="flex items-center gap-3 mb-3">
+                             <img src="https://flagcdn.com/w40/kr.png" alt="South Korea Flag" class="w-7 h-auto rounded-sm">
+                            <h4 class="plus-jakarta font-bold">South Korea</h4>
+                        </div>
+                        <p class="text-sm text-white/70">Ministry of Foreign Affairs (MOFA)</p>
+                    </div>
+                    <div class="data-source-card col-span-12 lg:col-span-4">
+                         <div class="flex items-center gap-3 mb-3">
+                             <img src="https://flagcdn.com/w40/il.png" alt="Israel Flag" class="w-7 h-auto rounded-sm">
+                            <h4 class="plus-jakarta font-bold">Israel</h4>
+                        </div>
+                        <p class="text-sm text-white/70">National Bureau for Counter Terror Financing (NBCTF)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- CTA Section -->
+        <section id="cta" class="cta-section py-20 px-4 md:px-8 relative overflow-hidden">
+            <div class="absolute inset-0 bg-no-repeat bg-center opacity-10" style="background-image: url('https://api.builder.io/api/v1/image/assets/TEMP/e9f658c779baa8e0ead0ae0726bb8da1b925c4ae?width=4962');"></div>
+            <div class="container mx-auto text-center relative z-10 scroll-animation">
+                <h2 class="plus-jakarta text-4xl md:text-6xl font-bold mb-6">Ready to See Everything?</h2>
+                <p class="plus-jakarta text-xl text-white/80 max-w-3xl mx-auto mb-10">
+                    Stop chasing shadows. Uncover the truth with the most powerful AI investigator toolkit on the market. Start your investigation today and bring clarity to the blockchain.
+                </p>
+                <a href="#pricing">
+                    <button class="plus-jakarta font-semibold text-lg md:text-xl uppercase tracking-widest text-white bg-white/10 border border-cyan-400/50 rounded-lg px-10 py-4 hover:bg-cyan-400/20 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)] transition-all duration-300 encrypt-btn" data-text="Choose Your Plan" onmouseenter="scrambleText(this)" onmouseleave="restoreText(this)">
+                        <div class="relative z-10 flex items-center justify-center gap-2">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i><span class="btn-text">Choose Your Plan</span>
+                        </div>
+                        <span class="animated-bg"></span>
+                    </button>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-16 px-4 md:px-8 border-t border-white/10">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+                <!-- Column 1: Logo & Social -->
+                <div>
+                    <div class="flex items-center justify-center md:justify-start gap-3 mb-4">
+                        <img src="https://api.builder.io/api/v1/image/assets/TEMP/0b774bfeabf0a41dd54fc314dba2e3da7216f89b?width=130" alt="Daemon Logo" class="w-10 h-10"/>
+                        <span class="text-2xl font-bold text-white tracking-wider">Daemon</span>
+                    </div>
+                    <div class="flex justify-center md:justify-start gap-4 mt-4">
+                        <a href="https://x.com/Sentry_Sol" class="text-white/60 hover:text-white transition-colors" aria-label="X/Twitter">
+                            <img src="x.png" alt="X Logo" class="w-6 h-6">
+                        </a>
+                        <a href="https://github.com/Daemon666-sys/WEBUI_Daemon.git" class="text-white/60 hover:text-white transition-colors" aria-label="GitHub">
+                           <i data-lucide="github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Column 2: Empty for spacing -->
+                 <div></div>
+
+                <!-- Column 3: Newsletter -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-2">Stay Updated</h4>
+                    <p class="text-white/60 mb-4">Get the latest news and updates from Daemon.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Enter your email" class="w-full bg-white/10 text-white px-4 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder:text-white/50">
+                        <button type="submit" class="bg-cyan-400 text-black px-4 py-2 rounded-r-md font-semibold hover:bg-cyan-500 transition-colors">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center text-white/50 mt-12 pt-8 border-t border-white/10">
+                <p>&copy; 2025 Daemon. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // --- Particle Loader Animation ---
+        let particleAnimationId;
+        function initParticleLoader() {
+            if (!Modernizr.webgl) {
+                console.warn('WebGL is not supported. Skipping particle loader.');
+                return;
+            }
+
+            const site = {
+                window: $(window),
+                Width: window.innerWidth,
+                Height: window.innerHeight
+            };
+
+            let camera, scene, renderer;
+            let mouseX = 0, mouseY = 0;
+            let p;
+
+            const windowHalfX = site.Width / 2;
+            const windowHalfY = site.Height / 2;
+
+            camera = new THREE.PerspectiveCamera(35, site.Width / site.Height, 1, 2000);
+            camera.position.z = 300;
+            scene = new THREE.Scene();
+            
+            const p_geom = new THREE.BufferGeometry();
+            const p_material = new THREE.PointsMaterial({
+                color: 0xFFFFFF,
+                size: 1.5
+            });
+
+            const manager = new THREE.LoadingManager();
+            const loader = new THREE.OBJLoader(manager);
+            loader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/40480/head.obj', function (object) {
+                const vertices = [];
+                object.traverse(function (child) {
+                    if (child instanceof THREE.Mesh) {
+                        const scale = 8;
+                        const positions = child.geometry.attributes.position.array;
+                        for (let i = 0; i < positions.length; i += 3) {
+                             vertices.push(positions[i] * scale, positions[i+1] * scale, positions[i+2] * scale);
+                        }
+                    }
+                });
+                p_geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                p = new THREE.Points(p_geom, p_material);
+                scene.add(p);
+            });
+            
+            renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(site.Width, site.Height);
+            renderer.setClearColor(0x000000, 0);
+
+            $('.particlehead').append(renderer.domElement);
+            $('.particlehead').on('mousemove', onDocumentMouseMove);
+            site.window.on('resize', onWindowResize);
+
+            function onWindowResize() {
+                site.Width = window.innerWidth;
+                site.Height = window.innerHeight;
+                camera.aspect = site.Width / site.Height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(site.Width, site.Height);
+            }
+
+            function onDocumentMouseMove(event) {
+                mouseX = (event.clientX - windowHalfX) / 2;
+                mouseY = (event.clientY - windowHalfY) / 2;
+            }
+
+            function animate() {
+                particleAnimationId = requestAnimationFrame(animate);
+                render();
+            }
+
+            function render() {
+                camera.position.x += ((mouseX * 0.5) - camera.position.x) * 0.05;
+                camera.position.y += (-(mouseY * 0.5) - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+        }
+
+        function stopParticleLoader() {
+             if (particleAnimationId) {
+                cancelAnimationFrame(particleAnimationId);
+            }
+            $('.particlehead').off('mousemove');
+            $(window).off('resize');
+        }
+
+
+        // Encrypt Button Scramble Effect
+        const CYCLES_PER_LETTER = 2;
+        const SHUFFLE_TIME = 50;
+        const CHARS = "!@#$%^&*():{};|,.<>/?";
+
+        const scrambleText = (element) => {
+            const targetText = element.dataset.text;
+            const textElement = element.querySelector('.btn-text');
+            if(!textElement) return;
+
+            let pos = 0;
+
+            if (element.dataset.intervalId) {
+                clearInterval(parseInt(element.dataset.intervalId));
+            }
+
+            const intervalId = setInterval(() => {
+                const scrambled = targetText
+                    .split("")
+                    .map((char, index) => {
+                        if (pos / CYCLES_PER_LETTER > index) {
+                            return char;
+                        }
+                        if (char === " ") return " ";
+                        const randomCharIndex = Math.floor(Math.random() * CHARS.length);
+                        return CHARS[randomCharIndex];
+                    })
+                    .join("");
+
+                textElement.innerText = scrambled;
+                pos++;
+
+                if (pos >= targetText.length * CYCLES_PER_LETTER) {
+                    clearInterval(intervalId);
+                    textElement.innerText = targetText;
+                }
+            }, SHUFFLE_TIME);
+            element.dataset.intervalId = intervalId;
+        };
+
+        const restoreText = (element) => {
+             const textElement = element.querySelector('.btn-text');
+            if(!textElement) return;
+
+            if (element.dataset.intervalId) {
+                clearInterval(parseInt(element.dataset.intervalId));
+                element.dataset.intervalId = null;
+            }
+            textElement.innerText = element.dataset.text;
+        };
+
+
+        // Bubble Text Effect
+        const bubbleWrapper = (text, id) => {
+            const wrapper = document.getElementById(id);
+            if (!wrapper) return;
+            wrapper.innerHTML = text
+                .split("")
+                .map(char => `<span class="bubble-text-char">${char === " " ? "&nbsp;" : char}</span>`)
+                .join("");
+        };
+        
+        // Loading Screen Logic
+        window.addEventListener('load', () => {
+            lucide.createIcons();
+            bubbleWrapper("SEE EVERYTHING", "hero-line-1");
+            bubbleWrapper("EVERYTHING SEE", "hero-line-2");
+            
+            // Start D3 Animation
+            startTraceAnimationLoop();
+            
+            // Start Particle Animation
+            initParticleLoader();
+
+            setupDrawAnimation();
+
+            const loader = document.getElementById('loader');
+            const body = document.querySelector('body');
+            const loaderText = document.getElementById('loader-text');
+
+            const words = ["Analyzing", "Decrypting", "Tracing", "Securing", "Daemon"];
+            let wordIndex = 0;
+            const SHUFFLE_TIME_LOADER = 60;
+            const HOLD_TIME_LOADER = 400;
+            const CHARS_LOADER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+            const scrambleWord = (text, onComplete) => {
+                let pos = 0;
+                let intervalId = setInterval(() => {
+                    const scrambled = text
+                        .split("")
+                        .map((char, index) => {
+                            if (pos / 2 > index) { return char; }
+                            if (char === " ") return " ";
+                            return CHARS_LOADER[Math.floor(Math.random() * CHARS_LOADER.length)];
+                        })
+                        .join("");
+
+                    loaderText.textContent = scrambled;
+                    pos++;
+
+                    if (pos >= text.length * 2) {
+                        clearInterval(intervalId);
+                        loaderText.textContent = text;
+                        if (onComplete) onComplete();
+                    }
+                }, SHUFFLE_TIME_LOADER);
+            };
+
+            const cycleWords = () => {
+                if (wordIndex >= words.length) {
+                    loader.classList.add('hidden');
+                    stopParticleLoader(); // Stop animation when loader is hidden
+                    setTimeout(() => {
+                        if (loader) loader.style.display = 'none';
+                        body.classList.remove('loading');
+                        handleScrollAnimation();
+                        // Also trigger the bento grid animation
+                        const bentoGrids = document.querySelectorAll('#bento-grid, #tech-bento-grid');
+                        bentoGrids.forEach(bentoGrid => {
+                             if(bentoGrid) {
+                                const bentoObserver = new IntersectionObserver((entries) => {
+                                    entries.forEach(entry => {
+                                        if (entry.isIntersecting) {
+                                            const blocks = entry.target.querySelectorAll('.bento-block');
+                                            blocks.forEach((block, index) => {
+                                                block.style.transitionDelay = `${index * 100}ms`;
+                                                block.classList.add('visible');
+                                            });
+                                            bentoObserver.unobserve(entry.target);
+                                        }
+                                    });
+                                }, { threshold: 0.1 });
+                                bentoObserver.observe(bentoGrid);
+                            }
+                        });
+
+                    }, 750);
+                    return;
+                }
+
+                scrambleWord(words[wordIndex], () => {
+                    setTimeout(() => {
+                        wordIndex++;
+                        cycleWords();
+                    }, wordIndex === words.length - 1 ? HOLD_TIME_LOADER * 3 : HOLD_TIME_LOADER);
+                });
+            };
+
+            cycleWords();
+        });
+        
+        // --- New Mobile Menu Logic ---
+        const menuButton = document.getElementById('menu-button');
+        const mobileMenu = document.getElementById('mobile-menu-new');
+        
+        menuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            if (!mobileMenu.classList.contains('hidden')) {
+                lucide.createIcons();
+            }
+        });
+        
+        document.querySelectorAll('#mobile-menu-new a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if(this.getAttribute('href').startsWith('#')){
+                     e.preventDefault();
+                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                       mobileMenu.classList.add('hidden');
+                    }
+                    const targetElement = document.querySelector(this.getAttribute('href'));
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+        
+        const scrollElements = document.querySelectorAll('.scroll-animation');
+        const elementInView = (el, dividend = 1) => {
+            const elementTop = el.getBoundingClientRect().top;
+            return (elementTop <= (window.innerHeight || document.documentElement.clientHeight) / dividend);
+        };
+        const displayScrollElement = (element) => element.classList.add('visible');
+        const handleScrollAnimation = () => {
+            scrollElements.forEach((el) => {
+                if (elementInView(el, 1.25)) displayScrollElement(el);
+            });
+        };
+
+        // Navbar scroll behavior
+        let lastScrollTop = 0;
+        const header = document.getElementById('main-header');
+        window.addEventListener('scroll', () => {
+            if (!document.body.classList.contains('loading')) {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                 if (scrollTop > 50) {
+                     header.classList.add('scrolled');
+                 } else {
+                     header.classList.remove('scrolled');
+                 }
+                
+                 if (scrollTop > lastScrollTop && scrollTop > 200) {
+                     header.classList.add('hidden-nav');
+                 } else {
+                     header.classList.remove('hidden-nav');
+                 }
+                 lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+                
+                 handleScrollAnimation();
+                 updateActiveNav();
+            }
+        });
+        
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('nav a.nav-link[href^="#"]');
+
+        const updateActiveNav = () => {
+            let currentSectionId = '';
+            const scrollY = window.scrollY;
+
+            sections.forEach(current => {
+                const sectionHeight = current.offsetHeight;
+                const sectionTop = current.offsetTop - 100; // Offset for header
+                if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                    currentSectionId = current.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === currentSectionId) {
+                    link.classList.add('active');
+                }
+            });
+        };
+        
+        const monthlyBtn = document.getElementById('monthly-btn');
+        const annualBtn = document.getElementById('annual-btn');
+        const monthlyPricing = document.getElementById('monthly-pricing');
+        const annualPricing = document.getElementById('annual-pricing');
+
+        if(monthlyBtn && annualBtn && monthlyPricing && annualPricing) {
+            monthlyBtn.addEventListener('click', () => {
+                monthlyBtn.classList.add('active');
+                annualBtn.classList.remove('active');
+                monthlyPricing.classList.remove('hidden');
+                annualPricing.classList.add('hidden'); // <-- FIX: Hide annual pricing
+            });
+            annualBtn.addEventListener('click', () => {
+                annualBtn.classList.add('active');
+                monthlyBtn.classList.remove('active');
+                annualPricing.classList.remove('hidden');
+                monthlyPricing.classList.add('hidden');
+            });
+        }
+        
+        // Tilt Card Effect
+        const tiltCards = document.querySelectorAll('.tilt-card');
+        const ROTATION_RANGE = 10;
+
+        tiltCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const { width, height, left, top } = rect;
+
+                const mouseX = (e.clientX - left);
+                const mouseY = (e.clientY - top);
+
+                const rX = (mouseY / height - 0.5) * -1 * ROTATION_RANGE;
+                const rY = (mouseX / width - 0.5) * ROTATION_RANGE;
+
+                card.style.transform = `rotateX(${rX}deg) rotateY(${rY}deg)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'rotateX(0deg) rotateY(0deg)';
+            });
+        });
+
+        // --- D3.js Trace Animation ---
+        function generateTraceData(maxDepth = 3, maxChildren = 3, currentDepth = 0) {
+            const root = { name: "Source", children: [] };
+            if (currentDepth >= maxDepth) return root;
+
+            const numChildren = Math.floor(Math.random() * maxChildren) + 1;
+            for (let i = 0; i < numChildren; i++) {
+                const child = generateTraceData(maxDepth, maxChildren, currentDepth + 1);
+                if (child.children.length > 0 || Math.random() > 0.3) { // Ensure some leafs
+                     root.children.push(child);
+                }
+            }
+            return root;
+        }
+
+        function renderTrace() {
+            const data = generateTraceData(3,3);
+            const svgElement = document.getElementById('d3-trace-animation');
+            if (!svgElement) return;
+
+            const width = svgElement.clientWidth;
+            const height = svgElement.clientHeight;
+
+            const svg = d3.select(svgElement);
+            svg.selectAll("*").remove(); // Clear previous render
+
+            // Define a glow filter
+            const defs = svg.append("defs");
+            const filter = defs.append("filter")
+                .attr("id", "glow");
+            filter.append("feGaussianBlur")
+                .attr("stdDeviation", "3.5")
+                .attr("result", "coloredBlur");
+            const feMerge = filter.append("feMerge");
+            feMerge.append("feMergeNode").attr("in", "coloredBlur");
+            feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
+            const g = svg.append("g").attr("transform", `translate(80,0)`);
+
+            const tree = d3.cluster().size([height, width - 160]);
+            const root = d3.hierarchy(data, d => d.children);
+            tree(root);
+
+            const link = g.selectAll(".link")
+                .data(root.descendants().slice(1))
+                .enter().append("path")
+                .attr("fill", "none")
+                .attr("stroke", "#00c8ff")
+                .attr("stroke-opacity", 0.4)
+                .attr("stroke-width", 1.5)
+                .attr("d", d => {
+                    return "M" + d.y + "," + d.x
+                         + "C" + (d.parent.y + 50) + "," + d.x
+                         + " " + (d.parent.y + 150) + "," + d.parent.x
+                         + " " + d.parent.y + "," + d.parent.x;
+                });
+            
+            const totalLength = link.nodes().map(node => node.getTotalLength());
+
+            link.attr("stroke-dasharray", (d, i) => totalLength[i] + " " + totalLength[i])
+                .attr("stroke-dashoffset", (d, i) => totalLength[i])
+                .transition()
+                .duration(1500)
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", 0);
+
+            const node = g.selectAll(".node")
+                .data(root.descendants())
+                .enter().append("g")
+                .attr("class", d => "node" + (d.children ? " node--internal" : " node--leaf"))
+                .attr("transform", d => `translate(${d.y}, ${d.x})`);
+
+            node.append("circle")
+                .attr("r", 0)
+                .attr("fill", d => d.depth === 0 ? "#fff" : "#00c8ff")
+                .attr("stroke", "#0053B4")
+                .attr("stroke-width", 2)
+                .style("filter", "url(#glow)")
+                .transition()
+                .delay(1000)
+                .duration(500)
+                .attr("r", d => d.depth === 0 ? 8 : 5);
+        }
+        
+        function startTraceAnimationLoop() {
+             try {
+                renderTrace();
+                setInterval(renderTrace, 5000);
+            } catch (error) {
+                console.error("Failed to start D3 animation:", error);
+            }
+        }
+
+        // Bento Grid Staggered Animation (for #tech-bento-grid)
+        document.querySelectorAll('#tech-bento-grid').forEach(bentoGrid => {
+            if (bentoGrid) {
+                const bentoObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const blocks = entry.target.querySelectorAll('.bento-block');
+                            blocks.forEach((block, index) => {
+                                block.style.transitionDelay = `${index * 100}ms`;
+                                block.classList.add('visible');
+                            });
+                            bentoObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1 });
+                bentoObserver.observe(bentoGrid);
+            }
+        });
+        
+        // Anime.js animation for Data Sources
+        const complianceSection = document.getElementById('compliance');
+        if (complianceSection) {
+            const dataSourceObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        anime({
+                            targets: '.data-source-card',
+                            translateY: [30, 0],
+                            opacity: [0, 1],
+                            delay: anime.stagger(150),
+                            easing: 'easeOutExpo',
+                            duration: 1000
+                        });
+                        // We can also animate the main clip-path card
+                        const mainCard = entry.target.querySelector('.bento-block');
+                        if(mainCard) {
+                             mainCard.style.transitionDelay = '0ms';
+                             mainCard.classList.add('visible');
+                        }
+                       
+                        dataSourceObserver.unobserve(entry.target); // Animate only once
+                    }
+                });
+            }, { threshold: 0.2 });
+
+            dataSourceObserver.observe(complianceSection);
+        }
+
+
+        // Draw Circle Animation Setup
+        function setupDrawAnimation() {
+            const path = document.getElementById('circle-path');
+            if (!path) return;
+
+            const pathLength = path.getTotalLength();
+            path.style.strokeDasharray = pathLength;
+            path.style.strokeDashoffset = pathLength;
+        }
+
+        // Clip Path Links Animation
+        const NO_CLIP = "polygon(0 0, 100% 0, 100% 100%, 0% 100%)";
+        const BOTTOM_RIGHT_CLIP = "polygon(0 0, 100% 0, 0 0, 0% 100%)";
+        const TOP_RIGHT_CLIP = "polygon(0 0, 0 100%, 100% 100%, 0% 100%)";
+        const BOTTOM_LEFT_CLIP = "polygon(100% 100%, 100% 0, 100% 100%, 0 100%)";
+        const TOP_LEFT_CLIP = "polygon(0 0, 100% 0, 100% 100%, 100% 0)";
+
+        const ENTRANCE_KEYFRAMES = {
+            left: [BOTTOM_RIGHT_CLIP, NO_CLIP],
+            bottom: [TOP_RIGHT_CLIP, NO_CLIP],
+            top: [BOTTOM_RIGHT_CLIP, NO_CLIP],
+            right: [TOP_LEFT_CLIP, NO_CLIP],
+        };
+
+        const EXIT_KEYFRAMES = {
+            left: [NO_CLIP, TOP_RIGHT_CLIP],
+            bottom: [NO_CLIP, BOTTOM_RIGHT_CLIP],
+            top: [NO_CLIP, BOTTOM_LEFT_CLIP],
+            right: [NO_CLIP, BOTTOM_LEFT_CLIP],
+        };
+        
+        const getNearestSide = (e) => {
+            const box = e.target.getBoundingClientRect();
+            const proximityToLeft = { proximity: Math.abs(box.left - e.clientX), side: "left" };
+            const proximityToRight = { proximity: Math.abs(box.right - e.clientX), side: "right" };
+            const proximityToTop = { proximity: Math.abs(box.top - e.clientY), side: "top" };
+            const proximityToBottom = { proximity: Math.abs(box.bottom - e.clientY), side: "bottom" };
+            const sortedProximity = [proximityToLeft, proximityToRight, proximityToTop, proximityToBottom].sort((a, b) => a.proximity - b.proximity);
+            return sortedProximity[0].side;
+        };
+        
+        document.querySelectorAll(".clip-path-link").forEach(link => {
+            const reveal = link.querySelector(".clip-path-link-reveal");
+            reveal.style.clipPath = BOTTOM_RIGHT_CLIP;
+
+            link.addEventListener("mouseenter", (e) => {
+                const side = getNearestSide(e);
+                const entrance = ENTRANCE_KEYFRAMES[side];
+                reveal.animate({ clipPath: entrance }, { duration: 400, easing: 'cubic-bezier(0.45, 0, 0.55, 1)', fill: 'forwards'});
+            });
+
+             link.addEventListener("mouseleave", (e) => {
+                const side = getNearestSide(e);
+                const exit = EXIT_KEYFRAMES[side];
+                 reveal.animate({ clipPath: exit }, { duration: 400, easing: 'cubic-bezier(0.45, 0, 0.55, 1)', fill: 'forwards'});
+            });
+        });
+
+    </script>
+</body>
+</html>
+
