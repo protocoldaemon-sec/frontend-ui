@@ -1,74 +1,180 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Lock } from "lucide-react"
-import { EncryptButton } from "./encrypt-button"
+import { useEffect, useRef } from 'react'
+import { motion, useAnimation, useInView } from 'framer-motion'
+import { ArrowRight, ChevronRight, Code, Lock, Shield, Zap } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
-export function HeroSection() {
-  const [line1Text, setLine1Text] = useState("")
-  const [line2Text, setLine2Text] = useState("")
+export const HeroSection = () => {
+  const controls = useAnimation()
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true })
 
   useEffect(() => {
-    const bubbleWrapper = (text: string, setter: (text: string) => void) => {
-      const wrapped = text
-        .split("")
-        .map(
-          (char) =>
-            `<span class="bubble-text-char inline-block font-light transition-all duration-350 hover:font-bold hover:text-white hover:scale-110 hover:-translate-y-1 hover:drop-shadow-[0_0_15px_rgba(0,200,255,0.7)]">${char === " " ? "&nbsp;" : char}</span>`,
-        )
-        .join("")
-      setter(wrapped)
+    if (isInView) {
+      controls.start('visible')
     }
+  }, [controls, isInView])
 
-    bubbleWrapper("SEE EVERYTHING", setLine1Text)
-    bubbleWrapper("EVERYTHING SEE", setLine2Text)
-  }, [])
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 100,
+        damping: 20,
+      },
+    },
+  }
+
+  const fadeInUp = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+  }
 
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen flex flex-col justify-center items-center text-center pt-32 pb-16 px-4 overflow-hidden"
+    <section 
+      ref={ref}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24"
     >
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 via-slate-900 to-slate-900"></div>
-      <div
-        className="absolute inset-0 bg-no-repeat bg-cover bg-center opacity-20"
-        style={{
-          backgroundImage:
-            "url('https://api.builder.io/api/v1/image/assets/TEMP/e9f658c779baa8e0ead0ae0726bb8da1b925c4ae?width=4962')",
-        }}
-      ></div>
-      <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent mix-blend-plus-lighter opacity-30"></div>
-
-      {/* Floating Decorative Elements */}
-      <div
-        className="absolute w-24 h-24 md:w-32 md:h-32 rounded-lg top-1/4 left-[10%] lg:left-[15%] bg-gradient-to-br from-gray-300 to-gray-600 mix-blend-soft-light animate-bounce"
-        style={{ animationDuration: "6s" }}
-      ></div>
-      <div
-        className="absolute w-24 h-24 md:w-32 md:h-32 rounded-lg top-1/2 right-[10%] lg:right-[15%] bg-gradient-to-br from-gray-300 to-gray-600 mix-blend-soft-light animate-bounce"
-        style={{ animationDuration: "6s", animationDelay: "-3s" }}
-      ></div>
-      <div
-        className="absolute w-16 h-16 md:w-24 md:h-24 rounded-lg bottom-1/4 left-[40%] lg:left-[45%] bg-gradient-to-br from-gray-300 to-gray-600 mix-blend-soft-light animate-bounce"
-        style={{ animationDuration: "6s", animationDelay: "-1.5s" }}
-      ></div>
-
-      <div className="relative z-10 flex flex-col items-center gap-8">
-        <h1 className="plus-jakarta font-light text-5xl md:text-7xl lg:text-8xl uppercase tracking-wider">
-          <span className="whitespace-nowrap block" dangerouslySetInnerHTML={{ __html: line1Text }} />
-          <span className="block whitespace-nowrap" dangerouslySetInnerHTML={{ __html: line2Text }} />
-        </h1>
-        <p className="plus-jakarta text-2xl md:text-4xl capitalize tracking-wide">AI powered investigator tools</p>
-        <Link href="/copilot" className="mt-8">
-          <EncryptButton
-            text="Try Beta"
-            className="plus-jakarta font-semibold text-lg md:text-xl uppercase tracking-widest text-white bg-white/10 border border-cyan-400/50 rounded-lg px-10 py-4 hover:bg-cyan-400/20 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)] transition-all duration-300"
+      <div className="container mx-auto px-4 z-10">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            className="text-center"
+            initial="hidden"
+            animate={controls}
+            variants={containerVariants}
           >
-            <Lock className="w-5 h-5" />
-          </EncryptButton>
-        </Link>
+            {/* Badge */}
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              <span>Introducing SentrySol v2.0</span>
+            </motion.div>
+
+            {/* Main Heading */}
+            <motion.h1 
+              className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+              variants={itemVariants}
+            >
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
+                Secure Your Smart Contracts
+              </span>
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-accent">
+                Before It's Too Late
+              </span>
+            </motion.h1>
+
+            {/* Subheading */}
+            <motion.p 
+              className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-12"
+              variants={itemVariants}
+            >
+              SentrySol provides advanced security analysis and monitoring for Solana smart contracts, 
+              helping developers identify and fix vulnerabilities before they're exploited.
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div 
+              className="flex flex-col sm:flex-row justify-center gap-4 mb-16"
+              variants={itemVariants}
+            >
+              <Button 
+                size="lg" 
+                className="group px-8 py-6 text-lg font-semibold"
+                onClick={() => window.location.href = '#get-started'}
+              >
+                Get Started Free
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="px-8 py-6 text-lg font-semibold hover:bg-white/5"
+              >
+                View Demo
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
+
+            {/* Features Grid */}
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+              variants={itemVariants}
+            >
+              {[
+                {
+                  icon: <Shield className="w-6 h-6 text-accent" />,
+                  title: 'Smart Contract Auditing',
+                  description: 'Comprehensive security analysis for Solana programs'
+                },
+                {
+                  icon: <Code className="w-6 h-6 text-accent" />,
+                  title: 'Vulnerability Detection',
+                  description: 'Identify critical security issues before deployment'
+                },
+                {
+                  icon: <Lock className="w-6 h-6 text-accent" />,
+                  title: 'Real-time Monitoring',
+                  description: '24/7 monitoring for suspicious activities'
+                }
+              ].map((feature, index) => (
+                <motion.div 
+                  key={index}
+                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 text-left"
+                  variants={fadeInUp}
+                  transition={{ delay: 0.1 * index }}
+                >
+                  <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-gray-400 text-sm">{feature.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Background Elements */}
+      <div className="absolute inset-0 -z-10">
+        <div 
+          className="absolute top-0 left-1/2 w-[800px] h-[800px] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl"
+          style={{ animation: 'pulse 15s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+        ></div>
+        <div 
+          className="absolute bottom-0 right-0 w-[600px] h-[600px] translate-x-1/2 translate-y-1/2 bg-gradient-to-tl from-accent/10 to-transparent rounded-full blur-3xl"
+          style={{ animation: 'pulse 12s cubic-bezier(0.4, 0, 0.6, 1) infinite', animationDelay: '2s' }}
+        ></div>
+        
+        {/* Animated Grid */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTIxIDIxaDZ2LTZoLTZ6TTIxIDIxaC02di02aDZ6Ii8+PC9nPjwvZz48L3N2Zz4=')]"></div>
+        </div>
       </div>
     </section>
   )
