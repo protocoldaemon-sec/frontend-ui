@@ -61,7 +61,7 @@ export function HeroSection() {
           <span className="block whitespace-nowrap" dangerouslySetInnerHTML={{ __html: line2Text }} />
         </h1>
         <p className="plus-jakarta text-2xl md:text-4xl capitalize tracking-wide">AI powered investigator tools</p>
-        <Link href="/copilot" className="mt-8">
+        <Link href="/daemonx" className="mt-8">
           <EncryptButton
             text="Try Beta"
             className="plus-jakarta font-semibold text-lg md:text-xl uppercase tracking-widest text-white bg-white/10 border border-cyan-400/50 rounded-lg px-10 py-4 hover:bg-cyan-400/20 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)] transition-all duration-300"

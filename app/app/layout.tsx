@@ -4,6 +4,8 @@ import { Poppins, Plus_Jakarta_Sans } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
+import { SolanaProvider } from "@/components/wallet"
+import "@solana/wallet-adapter-react-ui/styles.css";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -33,7 +35,9 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${plusJakarta.variable} font-sans antialiased bg-gradient-to-br from-blue-600 to-slate-900 text-white overflow-x-hidden`}
       >
+        <SolanaProvider>
         <Suspense fallback={null}>{children}</Suspense>
+        </SolanaProvider>        
         <Analytics />
       </body>
     </html>
