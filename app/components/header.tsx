@@ -68,7 +68,7 @@ export function Header() {
             <a href="#" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
               Login
             </a>
-            <Link href="/copilot">
+            <Link href="/daemonx">
               <EncryptButton
                 text="Investigate"
                 className="font-semibold px-5 py-2 rounded-lg bg-cyan-400 text-black hover:bg-cyan-500 transition-colors"
@@ -98,7 +98,7 @@ export function Header() {
               <a href="#" className="py-2 text-white hover:text-cyan-400 transition-colors">
                 Login
               </a>
-              <Link href="/copilot" className="mt-4">
+              <Link href="/daemonx" className="mt-4">
                 <EncryptButton
                   text="Investigate"
                   className="w-full font-semibold px-6 py-2 rounded-lg bg-cyan-400 text-black text-center hover:bg-cyan-500 transition-colors"
