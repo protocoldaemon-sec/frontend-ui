@@ -8,6 +8,7 @@ import { FlowChart } from "@/components/copilot/flow-chart"
 import { CopilotChat } from "@/components/copilot/copilot-chat"
 import { Settings } from "@/components/copilot/settings"
 import { LoadingScreen } from "@/components/loading-screen"
+import { History } from "@/components/copilot/history"
 
 export default function CopilotPage() {
   const [isLoading, setIsLoading] = useState(true)

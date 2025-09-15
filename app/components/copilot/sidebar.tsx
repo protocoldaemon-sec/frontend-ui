@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { LayoutDashboard, ShieldCheck, GitMerge, BarChart3, Bot, Settings, ChevronsRight } from "lucide-react"
+import { LayoutDashboard, ShieldCheck, GitMerge, BarChart3, Bot, Settings, ChevronsRight, History } from "lucide-react"
 
 interface SidebarProps {
   activePanel: string
@@ -17,6 +17,7 @@ export function Sidebar({ activePanel, setActivePanel, closed, setClosed }: Side
     { id: "flow", icon: GitMerge, tooltip: "Flow" },
     { id: "portotrack", icon: BarChart3, tooltip: "PortoTrack" },
     { id: "copilot", icon: Bot, tooltip: "Copilot" },
+    { id: "history", icon: History, tooltip: "History" },
     { id: "settings", icon: Settings, tooltip: "Settings" },
   ]
 

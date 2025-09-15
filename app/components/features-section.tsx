@@ -84,10 +84,10 @@ export function FeaturesSection() {
                 />
                 <div className="md:w-2/3">
                   <h3 className="plus-jakarta text-3xl md:text-4xl font-extrabold tracking-wider text-white">
-                    Pattern Recognition
+                    Risk Engine
                   </h3>
                   <p className="plus-jakarta mt-4 text-lg md:text-xl tracking-wide text-gray-300">
-                    AI-powered detection of hidden transaction patterns and anomalous fund flows.
+                    AI-powered detection from address screening and transaction monitoring.
                   </p>
                 </div>
               </div>
@@ -103,7 +103,7 @@ export function FeaturesSection() {
                 />
                 <div className="md:w-2/3 text-white">
                   <h3 className="plus-jakarta text-3xl md:text-4xl font-bold tracking-wider">
-                    Smart Contract Security
+                    Smart Contract Pre-Audit
                   </h3>
                   <p className="plus-jakarta mt-4 text-lg md:text-xl tracking-wide">
                     Automated vulnerability checks to flag malicious or risky contracts before exposure.
