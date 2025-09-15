@@ -1,14 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Sidebar } from "@/components/copilot/sidebar"
-import { Dashboard } from "@/components/copilot/dashboard"
-import { SecurityAnalysis } from "@/components/copilot/security-analysis"
-import { FlowChart } from "@/components/copilot/flow-chart"
-import { CopilotChat } from "@/components/copilot/copilot-chat"
-import { Settings } from "@/components/copilot/settings"
+import { Sidebar } from "@/components/daemonx/sidebar"
+import { Dashboard } from "@/components/daemonx/dashboard"
+import { SecurityAnalysis } from "@/components/daemonx/security-analysis"
+import { FlowChart } from "@/components/daemonx/flow-chart"
+import { CopilotChat } from "@/components/daemonx/copilot-chat"
+import { Settings } from "@/components/daemonx/settings"
 import { LoadingScreen } from "@/components/loading-screen"
-import { History } from "@/components/copilot/history"
+import { History } from "@/components/daemonx/history"
 
 export default function CopilotPage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -33,6 +33,8 @@ export default function CopilotPage() {
         return <FlowChart />
       case "copilot":
         return <CopilotChat />
+      case "history":
+        return <History />
       case "settings":
         return <Settings />
       default:
