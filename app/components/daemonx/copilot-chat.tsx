@@ -75,44 +75,49 @@ export function CopilotChat() {
   }
 
   return (
-    <div className="bg-slate-900/50 border border-slate-700 rounded-lg shadow-lg shadow-black/20 backdrop-blur-sm h-full flex flex-col">
-      <h1 className="plus-jakarta text-2xl font-bold text-white p-4 border-b border-slate-700">Daemon Copilot</h1>
+    <div className="h-full flex flex-col relative">
+      {/* Original chat container */}
+      <div className="relative bg-slate-900/50 border border-slate-700 rounded-lg shadow-lg shadow-black/20 backdrop-blur-sm flex-1 flex flex-col overflow-hidden">
+        <h1 className="plus-jakarta text-2xl font-bold text-white p-4 border-b border-slate-700">Daemon Copilot</h1>
 
-      <div ref={chatWindowRef} className="flex-1 p-4 overflow-y-auto space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`chat-bubble max-w-[75%] p-3 rounded-lg flex items-start gap-2.5 ${
-              message.sender === "user"
-                ? "chat-bubble-user bg-cyan-400 text-slate-900 self-end ml-auto"
-                : "chat-bubble-copilot bg-slate-800 text-slate-200 self-start"
-            }`}
-          >
-            {message.sender === "copilot" && <Bot className="w-5 h-5 shrink-0 mt-1" />}
-            <div dangerouslySetInnerHTML={{ __html: message.text }} className="text-sm" />
-          </div>
-        ))}
-
-        {isTyping && (
-          <div className="chat-bubble max-w-[75%] p-3 rounded-lg flex items-center gap-2.5 bg-slate-800 text-slate-200 self-start">
-            <Bot className="w-5 h-5 shrink-0" />
-            <div className="typing-indicator flex gap-1">
-              <span
-                className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
-                style={{ animationDelay: "-0.32s" }}
-              ></span>
-              <span
-                className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
-                style={{ animationDelay: "-0.16s" }}
-              ></span>
-              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
+        <div ref={chatWindowRef} className="flex-1 p-4 overflow-y-auto space-y-4 pb-24">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`chat-bubble max-w-[75%] p-3 rounded-lg flex items-start gap-2.5 ${
+                message.sender === "user"
+                  ? "chat-bubble-user bg-cyan-400 text-slate-900 self-end ml-auto"
+                  : "chat-bubble-copilot bg-slate-800 text-slate-200 self-start"
+              }`}
+            >
+              {message.sender === "copilot" && <Bot className="w-5 h-5 shrink-0 mt-1" />}
+              <div dangerouslySetInnerHTML={{ __html: message.text }} className="text-sm" />
             </div>
-          </div>
-        )}
+          ))}
+
+          {isTyping && (
+            <div className="chat-bubble max-w-[75%] p-3 rounded-lg flex items-center gap-2.5 bg-slate-800 text-slate-200 self-start">
+              <Bot className="w-5 h-5 shrink-0" />
+              <div className="typing-indicator flex gap-1">
+                <span
+                  className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                  style={{ animationDelay: "-0.32s" }}
+                ></span>
+                <span
+                  className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                  style={{ animationDelay: "-0.16s" }}
+                ></span>
+                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="p-4 border-t border-slate-700">
-        <div className="flex items-center bg-slate-800 rounded-lg">
+      {/* Fixed chat input field */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 flex justify-center">
+        <div className="w-full max-w-[calc(100%-2rem)] sm:max-w-4xl">
+          <div className="flex items-center bg-slate-800 rounded-lg w-full">
           <input
             type="text"
             value={inputValue}
@@ -124,6 +129,7 @@ export function CopilotChat() {
           <button onClick={handleSend} className="px-4 text-slate-400 hover:text-cyan-400 transition-colors">
             <Send className="w-5 h-5" />
           </button>
+          </div>
         </div>
       </div>
     </div>

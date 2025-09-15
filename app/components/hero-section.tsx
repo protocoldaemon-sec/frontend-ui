@@ -28,7 +28,7 @@ export function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex flex-col justify-center items-center text-center pt-32 pb-16 px-4 overflow-hidden"
+      className="relative min-h-screen flex flex-col justify-center items-center text-center pt-24 md:pt-32 pb-12 md:pb-16 px-4 overflow-hidden"
     >
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 via-slate-900 to-slate-900"></div>
@@ -56,15 +56,15 @@ export function HeroSection() {
       ></div>
 
       <div className="relative z-10 flex flex-col items-center gap-8">
-        <h1 className="plus-jakarta font-light text-5xl md:text-7xl lg:text-8xl uppercase tracking-wider">
-          <span className="whitespace-nowrap block" dangerouslySetInnerHTML={{ __html: line1Text }} />
-          <span className="block whitespace-nowrap" dangerouslySetInnerHTML={{ __html: line2Text }} />
+        <h1 className="plus-jakarta font-light text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl uppercase tracking-wider px-4">
+          <span className="whitespace-nowrap block leading-tight" dangerouslySetInnerHTML={{ __html: line1Text }} />
+          <span className="block whitespace-nowrap leading-tight" dangerouslySetInnerHTML={{ __html: line2Text }} />
         </h1>
-        <p className="plus-jakarta text-2xl md:text-4xl capitalize tracking-wide">AI powered investigator tools</p>
+        <p className="plus-jakarta text-xl sm:text-2xl md:text-3xl lg:text-4xl capitalize tracking-wide px-4">AI powered investigator tools</p>
         <Link href="/daemonx" className="mt-8">
           <EncryptButton
             text="Try Beta"
-            className="plus-jakarta font-semibold text-lg md:text-xl uppercase tracking-widest text-white bg-white/10 border border-cyan-400/50 rounded-lg px-10 py-4 hover:bg-cyan-400/20 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)] transition-all duration-300"
+            className="plus-jakarta font-semibold text-base sm:text-lg md:text-xl uppercase tracking-widest text-white bg-white/10 border border-cyan-400/50 rounded-lg px-8 sm:px-10 py-3 sm:py-4 hover:bg-cyan-400/20 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)] transition-all duration-300"
           >
             <Lock className="w-5 h-5" />
           </EncryptButton>

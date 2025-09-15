@@ -30,7 +30,7 @@ export default function HomePage() {
           <HeroSection />
           <FeaturesSection />
           <AboutSection />
-          <PricingSection />
+          {/* <PricingSection /> */}
           <CTASection />
         </main>
         <Footer />
