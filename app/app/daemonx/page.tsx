@@ -11,27 +11,30 @@ import { CopilotChat } from "@/components/daemonx/copilot-chat"
 import { Settings } from "@/components/daemonx/settings"
 import { LoadingScreen } from "@/components/loading-screen"
 import { History } from "@/components/daemonx/history"
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
+import { Button } from "@/components/ui/button"
 
 export default function CopilotPage() {
-  const { publicKey } = useWallet()
   const router = useRouter()
+  const { publicKey, disconnect } = useWallet()
   const [isLoading, setIsLoading] = useState(true)
   const [activePanel, setActivePanel] = useState("dashboard")
   const [sidebarClosed, setSidebarClosed] = useState(false)
-  const [showWalletModal, setShowWalletModal] = useState(false)
+  const isConnected = !!publicKey
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false)
-      // Check wallet connection after loading
-      if (!publicKey) {
-        setShowWalletModal(true)
-      }
     }, 1500)
 
     return () => clearTimeout(timer)
-  }, [publicKey])
+  }, [])
+
+  // Redirect to home if not connected
+  useEffect(() => {
+    if (!isLoading && !isConnected) {
+      router.push('/')
+    }
+  }, [isLoading, isConnected, router])
 
   const renderContent = () => {
     switch (activePanel) {
@@ -54,29 +57,27 @@ export default function CopilotPage() {
     }
   }
 
-  if (!publicKey) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4 text-center">
-        <div className="max-w-md space-y-6">
-          <h1 className="text-3xl font-bold">Wallet Required</h1>
-          <p className="text-gray-300">
-            Please connect your wallet to access the DaemonX dashboard.
-          </p>
-          <div className="flex justify-center">
-            <WalletMultiButton className="wallet-adapter-button-trigger" />
-          </div>
-          <p className="text-sm text-gray-500 mt-4">
-            Don't have a wallet? Install a Solana wallet like Phantom or Solflare.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <>
-      {isLoading && <LoadingScreen variant="bars" />}
-      <div className={`w-full flex h-screen ${isLoading ? "loading" : ""}`}>
+      {isLoading ? (
+        <LoadingScreen variant="bars" />
+      ) : !isConnected ? (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+          <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Wallet Required</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Please connect your wallet to access this page.
+            </p>
+            <Button 
+              onClick={() => router.push('/')}
+              className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Go to Home
+            </Button>
+          </div>
+        </div>
+      ) : (
+      <div className="w-full flex h-screen">
         <Sidebar
           activePanel={activePanel}
           setActivePanel={setActivePanel}
@@ -87,6 +88,7 @@ export default function CopilotPage() {
           <div className="content-panel active">{renderContent()}</div>
         </main>
       </div>
+      )}
     </>
   )
 }

@@ -1,7 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { LayoutDashboard, ShieldCheck, GitMerge, BarChart3, Bot, Settings, ChevronsRight, History } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useWallet } from "@solana/wallet-adapter-react"
+import { LayoutDashboard, ShieldCheck, GitMerge, BarChart3, Bot, Settings, ChevronsRight, History, LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface SidebarProps {
   activePanel: string
@@ -11,6 +14,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activePanel, setActivePanel, closed, setClosed }: SidebarProps) {
+  const router = useRouter()
+  const { publicKey, disconnect } = useWallet()
+  const isConnected = !!publicKey
   const navItems = [
     { id: "dashboard", icon: LayoutDashboard, tooltip: "Dashboard" },
     { id: "analysis", icon: ShieldCheck, tooltip: "Security Analysis" },
@@ -69,18 +75,41 @@ export function Sidebar({ activePanel, setActivePanel, closed, setClosed }: Side
         </div>
       </div>
 
-      <button onClick={() => setClosed(!closed)} className="border-t border-slate-700/50 w-full">
-        <div className="flex items-center p-2">
-          <div className="grid size-10 place-content-center text-lg text-slate-400">
-            <ChevronsRight className={`w-6 h-6 transition-transform ${closed ? "rotate-180" : ""}`} />
-          </div>
-          <span
-            className={`text-xs font-medium toggle-text text-slate-400 whitespace-nowrap transition-all duration-200 ${closed ? "opacity-0 w-0" : "opacity-100"}`}
+      <div className="space-y-2">
+        {isConnected && (
+          <Button
+            variant="ghost"
+            onClick={async () => {
+              try {
+                await disconnect()
+                router.push('/')
+              } catch (error) {
+                console.error('Error disconnecting wallet:', error)
+              }
+            }}
+            className={`w-full justify-start text-slate-400 hover:bg-slate-700/50 hover:text-white ${
+              closed ? 'justify-center' : ''
+            }`}
           >
-            Hide
-          </span>
-        </div>
-      </button>
+            <LogOut className="w-5 h-5" />
+            {!closed && <span className="ml-3">Disconnect Wallet</span>}
+          </Button>
+        )}
+        
+        <button 
+          onClick={() => setClosed(!closed)} 
+          className="w-full flex items-center p-2 text-slate-400 hover:bg-slate-700/50 rounded-md transition-colors"
+        >
+          <div className="grid size-10 place-content-center">
+            <ChevronsRight className={`w-5 h-5 transition-transform ${closed ? "rotate-180" : ""}`} />
+          </div>
+          {!closed && (
+            <span className="ml-3 text-sm font-medium">
+              {closed ? '' : 'Collapse'}
+            </span>
+          )}
+        </button>
+      </div>
     </nav>
   )
 }
