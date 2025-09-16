@@ -56,7 +56,7 @@ export default function CopilotPage() {
       case "flow":
         return <FlowChart />
       case "copilot":
-        return <CopilotChat />
+        return <CopilotChat sidebarClosed={sidebarClosed} />
       case "history":
         return <History />
       case "settings":
