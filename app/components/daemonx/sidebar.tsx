@@ -84,15 +84,15 @@ export function Sidebar({ activePanel, setActivePanel, closed, setClosed }: Side
   return (
     <>
       <MobileMenuButton />
-      <aside 
+      <nav 
         ref={sidebarRef}
-        className={`fixed md:sticky top-0 left-0 h-screen z-40 shrink-0 border-r border-slate-700/50 p-2 flex flex-col justify-between bg-slate-900/95 backdrop-blur-md transition-all duration-300 ${
+        className={`${isMobile ? 'fixed' : 'sticky'} top-0 left-0 h-screen z-40 shrink-0 border-r border-slate-700/50 p-2 flex flex-col justify-between bg-slate-900/95 backdrop-blur-md transition-all duration-300 ${
           closed ? "w-18" : "w-64"
         } ${isMobile ? (mobileMenuOpen ? 'translate-x-0' : '-translate-x-full') : ''}`}
       >
         <div>
           <div className="border-b border-slate-700/50 pb-3 mb-3">
-            <div className="flex items-center gap-3 p-2">
+            <Link href="/" className="flex items-center gap-3 p-2">
               <img
                 src="https://api.builder.io/api/v1/image/assets/TEMP/0b774bfeabf0a41dd54fc314dba2e3da7216f89b?width=130"
                 alt="Daemon Logo"
@@ -102,7 +102,7 @@ export function Sidebar({ activePanel, setActivePanel, closed, setClosed }: Side
                 <span className="block text-sm font-semibold whitespace-nowrap text-white">Daemon</span>
                 <span className="block text-xs text-slate-400 whitespace-nowrap">Investigator</span>
               </div>
-            </div>
+            </Link>
           </div>
 
           <div className="space-y-2">
@@ -163,7 +163,7 @@ export function Sidebar({ activePanel, setActivePanel, closed, setClosed }: Side
             )}
           </button>
         </div>
-      </aside>
+      </nav>
       {/* Overlay for mobile */}
       {isMobile && mobileMenuOpen && (
         <div 
