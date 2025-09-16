@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Menu, Lock } from "lucide-react"
-import { EncryptButton } from "./encrypt-button"
+import { Menu } from "lucide-react"
+import { WalletConnectButton } from "./wallet-connect-button"
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -65,17 +65,7 @@ export function Header() {
           </div>
 
           <div className="hidden lg:flex items-center gap-4">
-            <a href="#" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
-              Login
-            </a>
-            <Link href="/daemonx">
-              <EncryptButton
-                text="Investigate"
-                className="font-semibold px-5 py-2 rounded-lg bg-cyan-400 text-black hover:bg-cyan-500 transition-colors"
-              >
-                <Lock className="w-4 h-4" />
-              </EncryptButton>
-            </Link>
+            <WalletConnectButton />
           </div>
 
           <button className="lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -95,17 +85,9 @@ export function Header() {
               <a href="#pricing" className="py-2 text-white hover:text-cyan-400 transition-colors">
                 Pricing
               </a>
-              <a href="#" className="py-2 text-white hover:text-cyan-400 transition-colors">
-                Login
-              </a>
-              <Link href="/daemonx" className="mt-4">
-                <EncryptButton
-                  text="Investigate"
-                  className="w-full font-semibold px-6 py-2 rounded-lg bg-cyan-400 text-black text-center hover:bg-cyan-500 transition-colors"
-                >
-                  <Lock className="w-4 h-4" />
-                </EncryptButton>
-              </Link>
+              <div className="mt-2 w-full">
+                <WalletConnectButton />
+              </div>
             </div>
           </div>
         )}
