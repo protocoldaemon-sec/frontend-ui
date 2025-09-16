@@ -71,7 +71,22 @@ export default function CopilotPage() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex min-h-screen">
+      <Sidebar 
+        activePanel={activePanel} 
+        setActivePanel={setActivePanel} 
+        closed={sidebarClosed} 
+        setClosed={setSidebarClosed} 
+      />
+      
+      <main className={`flex-1 transition-all duration-300 ${
+        sidebarClosed ? 'md:ml-18' : 'md:ml-64'
+      }`}>
+        <div className="p-4 md:p-6">
+          {renderContent()}
+        </div>
+      </main>
+
       <Dialog open={showWalletModal} onOpenChange={setShowWalletModal}>
         <DialogContent className="sm:max-w-md bg-slate-900/95 backdrop-blur-md border-slate-700">
           <DialogHeader>
@@ -87,7 +102,7 @@ export default function CopilotPage() {
       </Dialog>
 
       {!isConnected ? (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 p-6 text-center">
+        <div className="fixed inset-0 flex items-center justify-center bg-slate-900 p-6 text-center z-50">
           <div className="max-w-md w-full bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700 shadow-2xl">
             <div className="flex justify-center mb-6">
               <img
@@ -99,23 +114,11 @@ export default function CopilotPage() {
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Welcome to Daemon</h2>
             <p className="text-gray-400 mb-8">Connect your wallet to access the dashboard and start exploring</p>
             <div className="flex justify-center">
-              <WalletMultiButton className="bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3 rounded-lg font-medium transition-colors text-base" />
+              <WalletMultiButton className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-3 rounded-lg font-medium transition-colors" />
             </div>
           </div>
         </div>
-      ) : (
-        <div className="w-full flex h-screen">
-          <Sidebar
-            activePanel={activePanel}
-            setActivePanel={setActivePanel}
-            closed={sidebarClosed}
-            setClosed={setSidebarClosed}
-          />
-          <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
-            <div className="content-panel active">{renderContent()}</div>
-          </main>
-        </div>
-      )}
+      ) : null}
     </div>
   )
 }
