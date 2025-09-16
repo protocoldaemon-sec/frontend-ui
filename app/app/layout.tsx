@@ -23,7 +23,27 @@ export const metadata: Metadata = {
   title: "Daemon - AI Powered Investigator Tools",
   description: "AI-powered platform for blockchain investigation and smart contract security analysis",
   generator: "Next.js",
-}
+  icons: {
+    icon: "https://cdn.builder.io/api/v1/image/assets%2F4fa3bacb9dc1480e93c89822f42d36f0%2F964b489dc4f14245af788e19c343d061", 
+    apple: "https://cdn.builder.io/api/v1/image/assets%2F4fa3bacb9dc1480e93c89822f42d36f0%2F964b489dc4f14245af788e19c343d061",
+  },
+  openGraph: {
+    title: "Daemon - AI Powered Investigator Tools",
+    description: "AI-powered platform for blockchain investigation and smart contract security analysis",
+    url: "https://yourdomain.com",
+    siteName: "Daemon",
+    images: [
+      {
+        url: "https://cdn.builder.io/api/v1/image/assets%2F4fa3bacb9dc1480e93c89822f42d36f0%2F964b489dc4f14245af788e19c343d061",
+        width: 512,
+        height: 512,
+        alt: "Daemon Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+};
 
 export default function RootLayout({
   children,
