@@ -127,7 +127,7 @@ export function AboutSection() {
               DIGITAL TRENCHES
             </h2>
             <p className="plus-jakarta text-lg text-white/80 leading-relaxed">
-              Daemon is an integrated, AI-powered platform that provides unprecedented clarity and actionable
+              Daemon is an integrated, Unified security platform that provides unprecedented clarity and actionable
               intelligence to combat financial crime and secure the Web3 ecosystem.
             </p>
           </div>

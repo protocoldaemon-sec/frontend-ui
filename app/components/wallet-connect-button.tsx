@@ -79,7 +79,7 @@ export function WalletConnectButton() {
           </div>
         ) : (
           <EncryptButton
-            text={connecting ? 'Connecting...' : 'Connect Wallet'}
+            text={connecting ? 'Connecting...' : 'Investigate'}
             className="font-semibold px-5 py-2 rounded-lg bg-cyan-400 text-black hover:bg-cyan-500 transition-colors"
             onClick={() => {
               const button = document.querySelector('.wallet-adapter-button-trigger') as HTMLButtonElement;
