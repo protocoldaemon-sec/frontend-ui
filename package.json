@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@types/cookie": "^0.6.0",
+    "@types/istanbul-lib-report": "^3.0.3",
+    "@types/istanbul-reports": "^3.0.4",
+    "@types/node": "^24.5.0",
+    "@types/w3c-web-usb": "^1.0.12"
+  }
+}
