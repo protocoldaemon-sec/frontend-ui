@@ -20,7 +20,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Daemon - AI Powered Investigator Tools",
+  title: "Daemon - Unified Security Platform",
   description: "AI-powered platform for blockchain investigation and smart contract security analysis",
   generator: "Next.js",
 }

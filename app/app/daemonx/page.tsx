@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { PortoTrack } from "@/components/daemonx/portotrack"
 
 export default function CopilotPage() {
   const router = useRouter()
@@ -55,6 +56,8 @@ export default function CopilotPage() {
         return <SecurityAnalysis />
       case "flow":
         return <FlowChart />
+      case "portotrack":
+        return <PortoTrack />
       case "copilot":
         return <CopilotChat />
       case "history":
