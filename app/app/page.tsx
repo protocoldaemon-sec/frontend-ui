@@ -9,6 +9,7 @@ import { PricingSection } from "@/components/pricing-section"
 import { CTASection } from "@/components/cta-section"
 import { Footer } from "@/components/footer"
 import { LoadingScreen } from "@/components/loading-screen"
+import { SupportedBySection } from "@/components/supported-by-section"
 
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -28,7 +29,8 @@ export default function HomePage() {
         <Header />
         <main>
           <HeroSection />
-          <FeaturesSection />
+          <SupportedBySection />
+          {/* <FeaturesSection /> */}
           <AboutSection />
           {/* <PricingSection /> */}
           <CTASection />
