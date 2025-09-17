@@ -78,7 +78,7 @@ export function CopilotChat({ sidebarClosed = false }: CopilotChatProps) {
     // Load system prompts and add initial welcome message
     const initializeChat = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/chat-sentrysol/system-prompts`)
+        const response = await fetch(`${BASE_URL}/chat-daemon/system-prompts`)
         if (response.ok) {
           const prompts = await response.json()
           setSystemPrompts(prompts)
@@ -157,7 +157,7 @@ I can perform real-time blockchain analysis and provide detailed security report
   }
 
   const streamChat = async function* (message: string, systemPrompt: string): AsyncGenerator<StreamData> {
-    const response = await fetch(`${BASE_URL}/chat-sentrysol-stream`, {
+    const response = await fetch(`${BASE_URL}/chat-daemon-stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -189,7 +189,13 @@ I can perform real-time blockchain analysis and provide detailed security report
             if (data === '[DONE]') return;
             
             try {
-              yield JSON.parse(data);
+              const parsed = JSON.parse(data);
+              // Handle the streaming format with content field
+              if (parsed.content) {
+                yield { content: parsed.content };
+              } else {
+                yield parsed;
+              }
             } catch (e) {
               console.warn('Failed to parse streaming data:', data);
             }
@@ -236,9 +242,16 @@ I can perform real-time blockchain analysis and provide detailed security report
   }
 
   const handleSend = async () => {
+    console.log('handleSend called', { inputValue, isTyping })
     const message = inputValue.trim()
-    if (!message || !systemPrompts) return
+    if (!message || isTyping) {
+      console.log('handleSend early return', { message, isTyping })
+      return
+    }
 
+    console.log('Starting to send message:', message)
+    setIsTyping(true)
+    
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       text: message,
@@ -269,8 +282,11 @@ I can perform real-time blockchain analysis and provide detailed security report
 
       try {
         let fullResponse = ""
+        let contentBuffer: string[] = []
         
-        for await (const chunk of streamChat(message, systemPrompts.available_prompts.default)) {
+        const systemPrompt = systemPrompts?.available_prompts?.default || "You are a helpful AI assistant specializing in blockchain security analysis."
+        
+        for await (const chunk of streamChat(message, systemPrompt)) {
           let content = ""
           
           if (typeof chunk === 'string') {
@@ -284,16 +300,24 @@ I can perform real-time blockchain analysis and provide detailed security report
           }
           
           if (content) {
-            fullResponse += content
+            // Add content to buffer
+            contentBuffer.push(content)
+            
+            // Reconstruct the full response with proper formatting
+            const reconstructedContent = reconstructStreamingContent(contentBuffer)
+            
             updateMessageStream(copilotMessageId, {
-              text: fullResponse,
+              text: reconstructedContent,
               isStreaming: true
             })
           }
         }
 
+        // Final cleanup and formatting
+        const finalContent = reconstructStreamingContent(contentBuffer)
+        
         updateMessageStream(copilotMessageId, {
-          text: fullResponse || "I've received your message. How can I help you with blockchain security analysis?",
+          text: finalContent || "I've received your message. How can I help you with blockchain security analysis?",
           isStreaming: false
         })
 
@@ -303,12 +327,15 @@ I can perform real-time blockchain analysis and provide detailed security report
           text: "Sorry, I encountered an error processing your request. Please try again.",
           isStreaming: false
         })
+      } finally {
+        setIsTyping(false)
       }
     } else {
       // Handle addresses - go directly to analysis without chat response
       for (const address of addresses) {
         await handleAddressAnalysis(address)
       }
+      setIsTyping(false)
     }
   }
 
@@ -414,7 +441,7 @@ I can perform real-time blockchain analysis and provide detailed security report
           
           progressText += `\n---\n\n`
           progressText += `**Current Status**: ${statusText}\n\n`
-          progressText += `*Powered by SentrySol Security Engine*`
+          progressText += `*Powered by Daemon Security Engine*`
           
           updateMessageStream(analysisMessageId, {
             text: progressText,
@@ -658,7 +685,7 @@ I can perform real-time blockchain analysis and provide detailed security report
   <div class="report-footer">
     <div class="footer-info">
       <div class="engine-info">
-        <strong>Analysis Engine:</strong> ${threat_analysis?.engine || 'SentrySol Security Engine'}
+        <strong>Analysis Engine:</strong> ${threat_analysis?.engine || 'Daemon Security Engine'}
       </div>
       <div class="report-id">
         <strong>Report ID:</strong> <code>${threat_analysis?.metadata?.analysis_timestamp || 'N/A'}</code>
@@ -682,8 +709,122 @@ I can perform real-time blockchain analysis and provide detailed security report
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+  const detectAndConvertLists = (text: string): string => {
+    if (!text) return ''
+    
+    console.log('Original text:', JSON.stringify(text))
+    
+    // Normalize line breaks
+    let processedText = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+    
+    // Find list patterns and convert them to proper HTML if needed
+    const lines = processedText.split('\n')
+    const result: string[] = []
+    let inList = false
+    let listType = ''
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+      const trimmed = line.trim()
+      
+      // Check if this is a list item
+      const isUnorderedList = /^[-*+]\s(.+)/.test(trimmed)
+      const isOrderedList = /^\d+\.\s(.+)/.test(trimmed)
+      
+      if (isUnorderedList || isOrderedList) {
+        const currentListType = isUnorderedList ? 'ul' : 'ol'
+        
+        // Start new list or continue existing one
+        if (!inList) {
+          result.push('') // Add empty line before list
+          inList = true
+          listType = currentListType
+        }
+        
+        // Extract the content after the marker
+        const content = isUnorderedList 
+          ? trimmed.replace(/^[-*+]\s/, '')
+          : trimmed.replace(/^\d+\.\s/, '')
+        
+        result.push(`${isUnorderedList ? '-' : (i + 1) + '.'} ${content}`)
+      } else {
+        // Not a list item
+        if (inList && trimmed !== '') {
+          result.push('') // Add empty line after list
+          inList = false
+          listType = ''
+        }
+        result.push(line)
+      }
+    }
+    
+    const finalText = result.join('\n').replace(/\n{3,}/g, '\n\n').trim()
+    console.log('Processed text:', JSON.stringify(finalText))
+    
+    return finalText
+  }
+
+  const reconstructStreamingContent = (contentBuffer: string[]): string => {
+    if (contentBuffer.length === 0) return ""
+    
+    // Join all content chunks
+    let fullContent = contentBuffer.join('')
+    
+    // Clean up and format the content
+    fullContent = fullContent
+      // Ensure proper line breaks before headers
+      .replace(/([^\n])(#{1,6}\s)/g, '$1\n\n$2')
+      // Ensure proper line breaks after headers
+      .replace(/(#{1,6}\s[^\n]*)\n([^\n#])/g, '$1\n\n$2')
+      // Ensure proper line breaks before list items
+      .replace(/([^\n])\n([-*+]\s)/g, '$1\n\n$2')
+      .replace(/([^\n])\n(\d+\.\s)/g, '$1\n\n$2')
+      // Ensure proper line breaks after list items when followed by non-list content
+      .replace(/([-*+]\s[^\n]*)\n([^\n\-\*\+\d])/g, '$1\n\n$2')
+      .replace(/(\d+\.\s[^\n]*)\n([^\n\d])/g, '$1\n\n$2')
+      // Clean up excessive line breaks
+      .replace(/\n{3,}/g, '\n\n')
+      // Ensure horizontal rules have proper spacing
+      .replace(/([^\n])\n(---+)\n([^\n])/g, '$1\n\n$2\n\n$3')
+      .trim()
+    
+    return fullContent
+  }
+
+  const preprocessMarkdownText = (text: string): string => {
+    if (!text) return ''
+    
+    console.log('PreprocessMarkdownText called with:', JSON.stringify(text.substring(0, 200)))
+    
+    // Enhanced preprocessing for better markdown parsing
+    let processedText = text
+      // Ensure proper spacing around headers
+      .replace(/([^\n])(#{1,6}\s)/g, '$1\n\n$2')
+      .replace(/(#{1,6}\s[^\n]*)\n([^\n#])/g, '$1\n\n$2')
+      // Ensure proper spacing around horizontal rules
+      .replace(/([^\n])\n(---+)\n([^\n])/g, '$1\n\n$2\n\n$3')
+      // Ensure proper list formatting
+      .replace(/([^\n])\n([-*+]\s)/g, '$1\n\n$2')
+      .replace(/([^\n])\n(\d+\.\s)/g, '$1\n\n$2')
+      // Ensure lists end properly
+      .replace(/([-*+]\s[^\n]*)\n([^\n\-\*\+\d\s])/g, '$1\n\n$2')
+      .replace(/(\d+\.\s[^\n]*)\n([^\n\d\s])/g, '$1\n\n$2')
+      // Clean up excessive whitespace
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/[ \t]+$/gm, '') // Remove trailing whitespace
+      .trim()
+    
+    console.log('PreprocessMarkdownText result:', JSON.stringify(processedText.substring(0, 200)))
+    
+    return processedText
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    console.log('Key pressed:', { key: e.key, shiftKey: e.shiftKey, isTyping, inputValue })
+    if (e.key === "Enter" && !e.shiftKey && !isTyping && inputValue.trim()) {
+      console.log('Enter key detected, calling handleSend')
       e.preventDefault()
       handleSend()
     }
@@ -714,11 +855,15 @@ I can perform real-time blockchain analysis and provide detailed security report
       }
       
       if (isInline) {
-        return (
-          <code
-            className="bg-slate-700/50 text-cyan-300 px-1 py-0.5 rounded text-xs font-mono"
-            {...props}
-          >
+        const textContent = String(children);
+        const shouldBeBlock = textContent.length > 30 || textContent.includes('\n');
+        
+        return shouldBeBlock ? (
+          <code className="block bg-slate-800/50 px-2 py-0 rounded-md text-slate-200 font-mono text-xs overflow-x-auto my-1 whitespace-pre-wrap break-words max-w-full border border-slate-600">
+            {children}
+          </code>
+        ) : (
+          <code className="bg-slate-700/60 text-cyan-300 px-2 py-0 rounded-md text-sm font-mono border border-slate-600/40">
             {children}
           </code>
         )
@@ -731,26 +876,38 @@ I can perform real-time blockchain analysis and provide detailed security report
         </pre>
       )
     },
-    p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed text-xs">{children}</p>,
+    
+    // Improved paragraph handling with reduced spacing
+    p: ({ children }) => <p className="my-0 leading-relaxed text-sm">{children}</p>,
+    
+    // Improved list handling similar to ChatBox
     ul: ({ children }) => (
-      <ul className="list-disc list-outside mb-2 space-y-0.5 pl-4 text-xs text-slate-200">
+      <ul className="list-none my-0 pl-3 text-white/90 space-y-0">
         {children}
       </ul>
     ),
     ol: ({ children }) => (
-      <ol className="list-decimal list-outside mb-2 space-y-0.5 pl-4 text-xs text-slate-200">
+      <ol className="list-decimal list-inside my-0 pl-3 text-white/90 space-y-0">
         {children}
       </ol>
     ),
-    li: ({ children }) => <li className="text-slate-200 leading-relaxed text-xs">{children}</li>,
-    strong: ({ children }) => <strong className="font-semibold text-cyan-300 text-xs">{children}</strong>,
-    em: ({ children }) => <em className="italic text-slate-300 text-xs">{children}</em>,
-    h1: ({ children }) => <h1 className="text-sm font-bold mb-2 text-white border-b border-slate-600 pb-1">{children}</h1>,
-    h2: ({ children }) => <h2 className="text-sm font-semibold mb-2 text-white">{children}</h2>,
-    h3: ({ children }) => <h3 className="text-xs font-semibold mb-1 text-slate-200">{children}</h3>,
-    h4: ({ children }) => <h4 className="text-xs font-semibold mb-1 text-slate-300">{children}</h4>,
+    li: ({ children }) => (
+      <li className="text-slate-200 leading-snug text-sm my-0 relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-cyan-400 before:font-bold before:text-sm before:leading-snug">
+        {children}
+      </li>
+    ),
+    
+    strong: ({ children }) => <strong className="font-semibold text-cyan-300 text-sm">{children}</strong>,
+    em: ({ children }) => <em className="italic text-slate-300 text-sm">{children}</em>,
+    
+    // Improved heading spacing
+    h1: ({ children }) => <h1 className="text-lg font-bold mb-1 mt-1 text-white border-b border-slate-600 pb-2">{children}</h1>,
+    h2: ({ children }) => <h2 className="text-base font-semibold mb-1 mt-1 text-white">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-sm font-semibold mb-0.5 mt-0.5 text-slate-200">{children}</h3>,
+    h4: ({ children }) => <h4 className="text-sm font-semibold mb-0.5 mt-0.5 text-slate-300">{children}</h4>,
+    
     blockquote: ({ children }) => (
-      <blockquote className="border-l-2 border-cyan-400 pl-2 py-1 my-2 bg-slate-800/30 rounded-r text-slate-300 italic text-xs">
+      <blockquote className="border-l-2 border-cyan-400 pl-4 py-1 my-1 bg-slate-800/30 rounded-r text-slate-300 italic text-sm">
         {children}
       </blockquote>
     ),
@@ -759,29 +916,29 @@ I can perform real-time blockchain analysis and provide detailed security report
         href={href} 
         target="_blank" 
         rel="noopener noreferrer"
-        className="text-cyan-400 hover:text-cyan-300 underline decoration-dotted underline-offset-1 transition-colors text-xs"
+        className="text-cyan-400 hover:text-cyan-300 underline decoration-dotted underline-offset-2 transition-colors text-sm font-medium"
       >
         {children}
       </a>
     ),
-    hr: () => <hr className="border-slate-600 my-2" />,
+    hr: () => <hr className="border-slate-600 my-4" />,
     table: ({ children }) => (
-      <div className="overflow-x-auto my-2">
-        <table className="min-w-full border-collapse border border-slate-600 text-xs">
+      <div className="overflow-x-auto my-3">
+        <table className="min-w-full border-collapse border border-slate-600 text-sm rounded-md">
           {children}
         </table>
       </div>
     ),
     thead: ({ children }) => <thead className="bg-slate-800">{children}</thead>,
     tbody: ({ children }) => <tbody>{children}</tbody>,
-    tr: ({ children }) => <tr className="border-b border-slate-600">{children}</tr>,
+    tr: ({ children }) => <tr className="border-b border-slate-600 hover:bg-slate-800/30">{children}</tr>,
     th: ({ children }) => (
-      <th className="border border-slate-600 px-2 py-1 text-left font-semibold text-white text-xs">
+      <th className="border border-slate-600 px-3 py-2 text-left font-semibold text-white text-sm">
         {children}
       </th>
     ),
     td: ({ children }) => (
-      <td className="border border-slate-600 px-2 py-1 text-slate-200 text-xs">
+      <td className="border border-slate-600 px-3 py-2 text-slate-200 text-sm">
         {children}
       </td>
     )
@@ -839,9 +996,16 @@ I can perform real-time blockchain analysis and provide detailed security report
                     dangerouslySetInnerHTML={{ __html: message.text }}
                   />
                 ) : (
-                  <ReactMarkdown components={markdownComponents}>
-                    {message.text}
-                  </ReactMarkdown>
+                  <div className="markdown-content">
+                    <ReactMarkdown 
+                      components={markdownComponents}
+                      remarkPlugins={[]}
+                      rehypePlugins={[]}
+                      skipHtml={false}
+                    >
+                      {preprocessMarkdownText(message.text)}
+                    </ReactMarkdown>
+                  </div>
                 )}
               </div>                {/* Progress bar for streaming */}
                 {message.isStreaming && message.streamingProgress !== undefined && (
@@ -897,14 +1061,15 @@ I can perform real-time blockchain analysis and provide detailed security report
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 className="flex-1 bg-transparent px-3 md:px-4 py-2 md:py-3 text-slate-200 focus:outline-none placeholder:text-slate-400 text-sm min-w-0"
                 placeholder="Ask Daemon Copilot anything or paste an address to analyze..."
               />
               <button 
                 onClick={handleSend}
-                disabled={!inputValue.trim()}
+                disabled={!inputValue.trim() || isTyping}
                 className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-slate-600 disabled:to-slate-700 text-white p-2 md:p-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-cyan-500/25 disabled:cursor-not-allowed flex-shrink-0"
+                title={!inputValue.trim() ? "Type a message to send" : isTyping ? "Please wait for the current response" : "Send message"}
               >
                 <Send className="w-4 h-4 md:w-5 md:h-5" />
               </button>
@@ -929,6 +1094,123 @@ I can perform real-time blockchain analysis and provide detailed security report
         }
         div::-webkit-scrollbar-thumb:hover {
           background: rgba(100, 116, 139, 0.7);
+        }
+
+        /* Enhanced List Styling - Similar to ChatBox */
+        .modern-analysis-container ul,
+        .modern-analysis-container ol {
+          margin: 0;
+          padding-left: 16px;
+          list-style: none;
+        }
+        
+        .modern-analysis-container ul li {
+          position: relative;
+          margin: 0;
+          padding-left: 16px;
+          list-style: none;
+          line-height: 1.4;
+          display: list-item;
+        }
+        
+        .modern-analysis-container ul li::before {
+          content: "•";
+          position: absolute;
+          left: 0;
+          color: #22d3ee;
+          font-weight: bold;
+          font-size: 14px;
+          line-height: 1.4;
+        }
+        
+        .modern-analysis-container ol {
+          list-style: decimal;
+          list-style-position: inside;
+          padding-left: 16px;
+        }
+        
+        .modern-analysis-container ol li {
+          position: relative;
+          margin: 0;
+          padding-left: 8px;
+          display: list-item;
+          line-height: 1.4;
+        }
+        
+        .modern-analysis-container ol li::marker {
+          color: #22d3ee;
+          font-weight: bold;
+        }
+
+        /* Chat message specific list styling - Match ChatBox approach */
+        .max-w-none ul,
+        .markdown-content ul {
+          margin: 0 !important;
+          padding-left: 16px !important;
+          list-style: none !important;
+          display: block !important;
+        }
+        
+        .max-w-none ul li,
+        .markdown-content ul li {
+          position: relative !important;
+          margin: 0 !important;
+          padding-left: 16px !important;
+          list-style: none !important;
+          display: list-item !important;
+          line-height: 1.4 !important;
+        }
+        
+        .max-w-none ul li::before,
+        .markdown-content ul li::before {
+          content: "•" !important;
+          position: absolute !important;
+          left: 0 !important;
+          color: #22d3ee !important;
+          font-weight: bold !important;
+          font-size: 14px !important;
+          line-height: 1.4 !important;
+        }
+        
+        .max-w-none ol,
+        .markdown-content ol {
+          list-style: decimal !important;
+          list-style-position: inside !important;
+          margin: 0 !important;
+          padding-left: 16px !important;
+          display: block !important;
+        }
+        
+        .max-w-none ol li,
+        .markdown-content ol li {
+          position: relative !important;
+          margin: 0 !important;
+          padding-left: 8px !important;
+          display: list-item !important;
+          line-height: 1.4 !important;
+        }
+        
+        .max-w-none ol li::marker,
+        .markdown-content ol li::marker {
+          color: #22d3ee !important;
+          font-weight: bold !important;
+        }
+
+        /* Force proper list display */
+        .markdown-content ul,
+        .markdown-content ol {
+          display: block !important;
+        }
+        
+        .markdown-content li {
+          display: list-item !important;
+        }
+
+        /* Improved spacing for paragraphs in lists */
+        .markdown-content li p,
+        .max-w-none li p {
+          margin: 0 !important;
+          display: inline !important;
         }
 
         /* Modern Security Report Styles */
@@ -1287,6 +1569,7 @@ I can perform real-time blockchain analysis and provide detailed security report
           color: #cbd5e1;
           margin-bottom: 8px;
           padding-left: 16px;
+          line-height: 1.4;
         }
 
         .actions-list li::before {
