@@ -60,7 +60,7 @@ export function HeroSection() {
           <span className="whitespace-nowrap block leading-tight" dangerouslySetInnerHTML={{ __html: line1Text }} />
           <span className="block whitespace-nowrap leading-tight" dangerouslySetInnerHTML={{ __html: line2Text }} />
         </h1>
-        <p className="plus-jakarta text-xl sm:text-2xl md:text-3xl lg:text-4xl capitalize tracking-wide px-4">AI powered investigator tools</p>
+        <p className="plus-jakarta text-xl sm:text-2xl md:text-3xl lg:text-4xl capitalize tracking-wide px-4">Unified Security Platform</p>
         <Link href="/daemonx" className="mt-8">
           <EncryptButton
             text="Try Beta"
