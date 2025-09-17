@@ -59,7 +59,7 @@ export default function CopilotPage() {
       case "portotrack":
         return <PortoTrack />
       case "copilot":
-        return <CopilotChat />
+        return <CopilotChat sidebarClosed={sidebarClosed} />
       case "history":
         return <History />
       case "settings":

@@ -45,9 +45,9 @@ export function Header() {
         <nav className="flex justify-between items-center py-4">
           <Link href="/" className="flex items-center gap-3">
             <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/0b774bfeabf0a41dd54fc314dba2e3da7216f89b?width=130"
+              src="https://cdn.builder.io/api/v1/image/assets%2F4fa3bacb9dc1480e93c89822f42d36f0%2F964b489dc4f14245af788e19c343d061"
               alt="Daemon Logo"
-              className="w-10 h-10"
+              className="w-10 h-10 object-contain"
             />
             <span className="text-2xl font-bold text-white tracking-wider">Daemon</span>
           </Link>
