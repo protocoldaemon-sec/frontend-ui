@@ -135,6 +135,12 @@ export function Header() {
                   </div>
                 )}
               </div>
+              <a href="#about" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
+                About
+              </a>
+              <a href="#pricing" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
+                Pricing
+              </a>
               <div className="mt-2 w-full">
                 <WalletConnectButton />
               </div>
