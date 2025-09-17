@@ -1,3 +1,7 @@
+"use client";
+
+import { useRef, useEffect } from 'react';
+
 export function SupportedBySection() {
   return (
     <section id="supportedby" className="py-16 px-4 md:px-8">
