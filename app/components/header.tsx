@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useRef, useState, useEffect } from "react"
 import Link from "next/link"
 import { Menu, ChevronDown } from "lucide-react"
 import { WalletConnectButton } from "./wallet-connect-button"
