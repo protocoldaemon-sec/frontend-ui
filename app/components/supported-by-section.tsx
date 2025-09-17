@@ -1,6 +1,6 @@
 export function SupportedBySection() {
   return (
-    <section className="py-16 px-4 md:px-8 bg-[#000B19]">
+    <section id="supportedby" className="py-16 px-4 md:px-8">
       <div className="container mx-auto">
         {/* Section Title */}
         <div className="text-center mb-12">

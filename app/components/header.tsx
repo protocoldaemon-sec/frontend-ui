@@ -35,6 +35,22 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [lastScrollY])
 
+    // Add this useEffect in your component
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProductsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const dropdownRef = useRef(null);
+
   return (
     <header
       id="main-header"
@@ -56,10 +72,14 @@ export function Header() {
           <div className="hidden lg:flex items-center gap-6">
             <div 
               className="relative"
+              ref={dropdownRef}
               onMouseEnter={() => setProductsDropdownOpen(true)}
               onMouseLeave={() => setProductsDropdownOpen(false)}
             >
-              <button className="nav-link text-lg text-gray-400 hover:text-white transition-colors flex items-center gap-1">
+              <button 
+                className="nav-link text-lg text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+                onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
+              >
                 Products
                 <ChevronDown className="w-4 h-4" />
               </button>
