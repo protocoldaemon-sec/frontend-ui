@@ -11,6 +11,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,7 +36,7 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [lastScrollY])
 
-    // Add this useEffect in your component
+    // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -46,6 +47,9 @@ export function Header() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      if (dropdownTimeoutRef.current) {
+        clearTimeout(dropdownTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -69,12 +73,22 @@ export function Header() {
             <span className="text-2xl font-bold text-white tracking-wider">Daemon</span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6 mr-8">
             <div 
               className="relative"
               ref={dropdownRef}
-              onMouseEnter={() => setProductsDropdownOpen(true)}
-              onMouseLeave={() => setProductsDropdownOpen(false)}
+              onMouseEnter={() => {
+                if (dropdownTimeoutRef.current) {
+                  clearTimeout(dropdownTimeoutRef.current);
+                  dropdownTimeoutRef.current = null;
+                }
+                setProductsDropdownOpen(true);
+              }}
+              onMouseLeave={() => {
+                dropdownTimeoutRef.current = setTimeout(() => {
+                  setProductsDropdownOpen(false);
+                }, 3000);
+              }}
             >
               <button 
                 className="nav-link text-lg text-gray-400 hover:text-white transition-colors flex items-center gap-1"
@@ -96,12 +110,15 @@ export function Header() {
                 </div>
               )}
             </div>
+            <a href="#" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
+              API
+            </a>
             <a href="#about" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
               About
             </a>
-            <a href="#pricing" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
+            {/* <a href="#pricing" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
               Pricing
-            </a>
+            </a> */}
           </div>
 
           <div className="hidden lg:flex items-center gap-4">
@@ -135,12 +152,15 @@ export function Header() {
                   </div>
                 )}
               </div>
+              <a href="#" className="py-2 text-white hover:text-cyan-400 transition-colors">
+                API
+              </a>
               <a href="#about" className="py-2 text-white hover:text-cyan-400 transition-colors">
                 About
               </a>
-              <a href="#pricing" className="py-2 text-white hover:text-cyan-400 transition-colors">
+              {/* <a href="#pricing" className="py-2 text-white hover:text-cyan-400 transition-colors">
                 Pricing
-              </a>
+              </a> */}
               <div className="mt-2 w-full">
                 <WalletConnectButton />
               </div>

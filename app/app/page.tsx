@@ -9,6 +9,7 @@ import { PricingSection } from "@/components/pricing-section"
 import { CTASection } from "@/components/cta-section"
 import { Footer } from "@/components/footer"
 import { LoadingScreen } from "@/components/loading-screen"
+import { ComplianceSection } from '@/components/compliance'
 import { SupportedBySection } from "@/components/supported-by-section"
 
 export default function HomePage() {
@@ -29,9 +30,10 @@ export default function HomePage() {
         <Header />
         <main>
           <HeroSection />
-          <SupportedBySection />
-          {/* <FeaturesSection /> */}
+          {/* <SupportedBySection /> */}
+          <FeaturesSection />
           <AboutSection />
+          <ComplianceSection />
           {/* <PricingSection /> */}
           <CTASection />
         </main>
