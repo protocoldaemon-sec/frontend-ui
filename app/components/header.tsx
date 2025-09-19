@@ -1,15 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useRef, useState, useEffect } from "react"
 import Link from "next/link"
-import { Menu } from "lucide-react"
+import { Menu, ChevronDown } from "lucide-react"
 import { WalletConnectButton } from "./wallet-connect-button"
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [productsDropdownOpen, setProductsDropdownOpen] = useState(false)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,6 +36,25 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [lastScrollY])
 
+    // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProductsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      if (dropdownTimeoutRef.current) {
+        clearTimeout(dropdownTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const dropdownRef = useRef(null);
+
   return (
     <header
       id="main-header"
@@ -52,16 +73,52 @@ export function Header() {
             <span className="text-2xl font-bold text-white tracking-wider">Daemon</span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-6">
-            <a href="#features" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
-              Products
+          <div className="hidden lg:flex items-center gap-6 mr-8">
+            <div 
+              className="relative"
+              ref={dropdownRef}
+              onMouseEnter={() => {
+                if (dropdownTimeoutRef.current) {
+                  clearTimeout(dropdownTimeoutRef.current);
+                  dropdownTimeoutRef.current = null;
+                }
+                setProductsDropdownOpen(true);
+              }}
+              onMouseLeave={() => {
+                dropdownTimeoutRef.current = setTimeout(() => {
+                  setProductsDropdownOpen(false);
+                }, 3000);
+              }}
+            >
+              <button 
+                className="nav-link text-lg text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+                onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
+              >
+                Products
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {productsDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-slate-900/95 backdrop-blur-md rounded-lg shadow-lg border border-slate-700">
+                  <div className="py-2">
+                    <a href="/bountymarket" className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-slate-800/50 transition-colors">
+                      Bounty Market
+                    </a>
+                    <a href="/datamarket" className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-slate-800/50 transition-colors">
+                      Data Market
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+            <a href="#" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
+              API
             </a>
             <a href="#about" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
               About
             </a>
-            <a href="#pricing" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
+            {/* <a href="#pricing" className="nav-link text-lg text-gray-400 hover:text-white transition-colors">
               Pricing
-            </a>
+            </a> */}
           </div>
 
           <div className="hidden lg:flex items-center gap-4">
@@ -76,15 +133,34 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="lg:hidden bg-slate-900/95 backdrop-blur-md p-4 rounded-lg">
             <div className="flex flex-col gap-2 text-lg">
-              <a href="#features" className="py-2 text-white hover:text-cyan-400 transition-colors">
-                Products
+              <div>
+                <button 
+                  className="py-2 text-white hover:text-cyan-400 transition-colors flex items-center gap-1 w-full text-left"
+                  onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
+                >
+                  Products
+                  <ChevronDown className={`w-4 h-4 transition-transform ${productsDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {productsDropdownOpen && (
+                  <div className="ml-4 mt-2 space-y-2">
+                    <a href="/datamarket" className="block py-1 text-gray-300 hover:text-cyan-400 transition-colors">
+                      Data Market
+                    </a>
+                    <a href="/bountymarket" className="block py-1 text-gray-300 hover:text-cyan-400 transition-colors">
+                      Bounty Market
+                    </a>
+                  </div>
+                )}
+              </div>
+              <a href="#" className="py-2 text-white hover:text-cyan-400 transition-colors">
+                API
               </a>
               <a href="#about" className="py-2 text-white hover:text-cyan-400 transition-colors">
                 About
               </a>
-              <a href="#pricing" className="py-2 text-white hover:text-cyan-400 transition-colors">
+              {/* <a href="#pricing" className="py-2 text-white hover:text-cyan-400 transition-colors">
                 Pricing
-              </a>
+              </a> */}
               <div className="mt-2 w-full">
                 <WalletConnectButton />
               </div>

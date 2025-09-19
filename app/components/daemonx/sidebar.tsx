@@ -94,13 +94,13 @@ export function Sidebar({ activePanel, setActivePanel, closed, setClosed }: Side
           <div className="border-b border-slate-700/50 pb-3 mb-3">
             <Link href="/" className="flex items-center gap-3 p-2">
               <img
-                src="https://api.builder.io/api/v1/image/assets/TEMP/0b774bfeabf0a41dd54fc314dba2e3da7216f89b?width=130"
+                src="https://cdn.builder.io/api/v1/image/assets%2F4fa3bacb9dc1480e93c89822f42d36f0%2F964b489dc4f14245af788e19c343d061"
                 alt="Daemon Logo"
-                className="w-10 h-10 shrink-0"
+                className="w-8 h-8 shrink-0 object-contain"
               />
               <div className={`title-text overflow-hidden transition-all duration-200 ${closed ? "opacity-0 w-0" : "opacity-100"}`}>
                 <span className="block text-sm font-semibold whitespace-nowrap text-white">Daemon</span>
-                <span className="block text-xs text-slate-400 whitespace-nowrap">Investigator</span>
+                {/* <span className="block text-xs text-slate-400 whitespace-nowrap">Investigator</span> */}
               </div>
             </Link>
           </div>

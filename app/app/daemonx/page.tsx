@@ -14,13 +14,14 @@ import { History } from "@/components/daemonx/history"
 import { Button } from "@/components/ui/button"
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
 import { Lock } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogHeader,
+//   DialogTitle,
+// } from "@/components/ui/dialog"
+import { PortoTrack } from "@/components/daemonx/portotrack"
 
 export default function CopilotPage() {
   const router = useRouter()
@@ -55,6 +56,8 @@ export default function CopilotPage() {
         return <SecurityAnalysis />
       case "flow":
         return <FlowChart />
+      case "portotrack":
+        return <PortoTrack />
       case "copilot":
         return <CopilotChat sidebarClosed={sidebarClosed} />
       case "history":
@@ -72,7 +75,7 @@ export default function CopilotPage() {
 
   return (
     <div className="relative">
-      <Dialog open={showWalletModal} onOpenChange={setShowWalletModal}>
+      {/* <Dialog open={showWalletModal} onOpenChange={setShowWalletModal}>
         <DialogContent className="sm:max-w-md bg-slate-900/95 backdrop-blur-md border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-white text-center">Connect Your Wallet</DialogTitle>
@@ -84,7 +87,7 @@ export default function CopilotPage() {
             <WalletMultiButton className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-3 rounded-lg font-medium transition-colors" />
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
 
       {!isConnected ? (
         <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 p-6 text-center">

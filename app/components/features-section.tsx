@@ -7,6 +7,16 @@ export function FeaturesSection() {
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const section = document.getElementById('draw-effect-section');
+    if (section) {
+      // Add visible class after a small delay to ensure the element is in the DOM
+      setTimeout(() => {
+        section.classList.add('visible');
+      }, 100);
+    }
+  }, []);
+
+  useEffect(() => {
     const velocityText = velocityTextRef.current
     const wrapper = wrapperRef.current
 
@@ -59,7 +69,7 @@ export function FeaturesSection() {
   return (
     <>
       {/* Velocity Scroll Text Effect */}
-      <div ref={wrapperRef} className="h-[200vh]">
+      {/* <div ref={wrapperRef} className="h-[200vh]">
         <div className="sticky top-0 h-screen overflow-hidden flex items-center">
           <h2
             ref={velocityTextRef}
@@ -69,9 +79,22 @@ export function FeaturesSection() {
             TRACE&nbsp;—&nbsp;
           </h2>
         </div>
-      </div>
+      </div> */}
+      
 
       <section id="features" className="py-20 px-4 md:px-8 relative bg-[#000B19]">
+      <div id="draw-effect-section" class="py-24 px-4 md:px-8 bg-[#000B19] text-center scroll-animation">
+            <h2 class="plus-jakarta text-white text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight">
+                Uncover the Truth with&nbsp;
+                <span class="relative inline-block text-cyan-400">
+                    Precision
+                    <svg viewBox="0 0 345 84" fill="none" xmlns="http://www.w3.org/2000/svg" class="absolute -left-4 -right-4 -top-2 -bottom-4">
+                        <path id="circle-path" d="M171.745 2.00002C127.906 19.3441 -1.4985 11.2312 2.30748 48.6015C4.78288 74.1913 41.3415 80.4439 152.483 78.8573C263.625 77.2707 384.711 75.3193 335.631 42.6105C280.12 -0.806297 122.033 26.311 68.9954 2.00002" stroke="#00C8FF" stroke-width="3" stroke-dasharray="1000" stroke-dashoffset="1000"/>
+                    </svg>
+                </span>
+                &nbsp;Security Tools
+            </h2>
+        </div>
         <div className="container mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Feature Card 1 */}

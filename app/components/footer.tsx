@@ -2,7 +2,7 @@ import { Github } from "lucide-react"
 
 export function Footer() {
   return (
-    <footer className="py-16 px-4 md:px-8 border-t border-white/10">
+    <footer className="py-16 px-4 md:px-8 border-t border-white/10 bg-[#001021]">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
           {/* Column 1: Logo & Social */}
@@ -17,14 +17,14 @@ export function Footer() {
             </div>
             <div className="flex justify-center md:justify-start gap-4 mt-4">
               <a
-                href="https://x.com/Sentry_Sol"
+                href="https://x.com/DaemonProtocol"
                 className="text-white/60 hover:text-white transition-colors"
                 aria-label="X/Twitter"
               >
                 <img src="/x.png" alt="X Logo" className="w-6 h-6" />
               </a>
               <a
-                href="https://github.com/Daemon666-sys/WEBUI_Daemon.git"
+                href="https://github.com/protocoldaemon-sec/"
                 className="text-white/60 hover:text-white transition-colors"
                 aria-label="GitHub"
               >
