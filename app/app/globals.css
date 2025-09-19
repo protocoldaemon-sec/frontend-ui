@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Base font settings */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+
 /* Circle Drawing Effect */
 #circle-path {
     transition: stroke-dashoffset 1.5s cubic-bezier(0.45, 0, 0.55, 1);

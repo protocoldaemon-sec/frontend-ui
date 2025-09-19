@@ -1,22 +1,18 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Poppins, Plus_Jakarta_Sans } from "next/font/google"
+import { Inter } from 'next/font/google'
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { SolanaProvider } from "@/components/wallet"
 import "@solana/wallet-adapter-react-ui/styles.css";
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-poppins",
-})
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700", "800"],
-  variable: "--font-plus-jakarta",
+// Configure Inter font
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
@@ -77,7 +73,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} ${plusJakarta.variable} font-sans antialiased bg-gradient-to-br from-blue-600 to-slate-900 text-white overflow-x-hidden`}
+        className={`${inter.variable} font-sans antialiased bg-gradient-to-br from-blue-600 to-slate-900 text-white overflow-x-hidden`}
       >
         <SolanaProvider>
         <Suspense fallback={null}>{children}</Suspense>

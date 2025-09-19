@@ -100,10 +100,10 @@ export function Header() {
               {productsDropdownOpen && (
                 <div className="absolute top-full left-0 mt-2 w-48 bg-slate-900/95 backdrop-blur-md rounded-lg shadow-lg border border-slate-700">
                   <div className="py-2">
-                    <a href="#bounty-market" className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-slate-800/50 transition-colors">
+                    <a href="/bountymarket" className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-slate-800/50 transition-colors">
                       Bounty Market
                     </a>
-                    <a href="#data-market" className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-slate-800/50 transition-colors">
+                    <a href="/datamarket" className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-slate-800/50 transition-colors">
                       Data Market
                     </a>
                   </div>
@@ -143,11 +143,11 @@ export function Header() {
                 </button>
                 {productsDropdownOpen && (
                   <div className="ml-4 mt-2 space-y-2">
-                    <a href="#bounty-market" className="block py-1 text-gray-300 hover:text-cyan-400 transition-colors">
-                      Bounty Market
-                    </a>
-                    <a href="#data-market" className="block py-1 text-gray-300 hover:text-cyan-400 transition-colors">
+                    <a href="/datamarket" className="block py-1 text-gray-300 hover:text-cyan-400 transition-colors">
                       Data Market
+                    </a>
+                    <a href="/bountymarket" className="block py-1 text-gray-300 hover:text-cyan-400 transition-colors">
+                      Bounty Market
                     </a>
                   </div>
                 )}

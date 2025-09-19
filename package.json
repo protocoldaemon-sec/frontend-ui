@@ -5,5 +5,10 @@
     "@types/istanbul-reports": "^3.0.4",
     "@types/node": "^22.18.4",
     "@types/w3c-web-usb": "^1.0.12"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@types/jspdf": "^2.0.0",
+    "jspdf": "^3.0.3"
   }
 }
